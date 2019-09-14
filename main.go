@@ -15,8 +15,8 @@ func init() {
 }
 
 func main() {
-	fmt.Println("there1")
-	test1_01_n10()
+	//test1_01_n10()
+	test1_01_n10_file()
 }
 
 func test1_01_n10() {
@@ -31,6 +31,16 @@ func test1_01_n10() {
 		}).Fatal("MakeOneDimensionalCuttingStockProblem error")
 	}
 
+	solution := heuristics.GreedyAlgorithmByAscending(task)
+	fmt.Println(solution)
+}
+
+func test1_01_n10_file() {
+	fileName := "C:/Users/amyachev/Desktop/UNN/cutting-stock-problem/task_1_01_n10.txt"
+	task, err := taskP.MakeOneDimensionalCuttingStockProblemFromFile(fileName)
+	if err != nil {
+		fmt.Println(err)
+	}
 	solution := heuristics.GreedyAlgorithmByAscending(task)
 	fmt.Println(solution)
 }

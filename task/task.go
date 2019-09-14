@@ -2,7 +2,9 @@ package task
 
 import (
 	"fmt"
-	"io"
+	"io/ioutil"
+	"strconv"
+	"strings"
 	"math"
 	"sort"
 
@@ -29,8 +31,29 @@ func MakeOneDimensionalCuttingStockProblem(materialLength int, piecesLength []in
 	return oneDimensionalCuttingStockProblem{materialLength: materialLength, countPieces: len(piecesLength), piecesLength: piecesLength}, nil
 }
 
-func MakeOneDimensionalCuttingStockProblemFromReader(reader io.Reader) (Task, error) {
-	panic("not implemented")
+func MakeOneDimensionalCuttingStockProblemFromFile(fileName string) (Task, error) {
+	contentBytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	content := string(contentBytes)
+	splittedContent := strings.Split(content, " ")
+
+	splittedContentInts := make([]int, len(splittedContent))
+
+	for idx, value := range splittedContent {
+		intValue, err := strconv.Atoi(value)
+		if err != nil {
+			return nil, err
+		}
+		splittedContentInts[idx] = intValue
+	}
+
+	materialLength := splittedContentInts[0]
+	pieceLength := splittedContentInts[1:]
+
+	return MakeOneDimensionalCuttingStockProblem(materialLength, pieceLength)
 }
 
 
