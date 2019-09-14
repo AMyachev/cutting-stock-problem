@@ -14,8 +14,25 @@ type Task interface {
 	GetCountPieces() int
 	GetPieceLength(numberPiece int) int
 	ComputeLowerBound() int
-	GetAscendingPermutation() []int
+	GetAllPiecesByAscending() []int
 }
+
+
+// Facade
+func MakeOneDimensionalCuttingStockProblem(materialLength int, piecesLength []int) (Task, error) {
+	for _, pieceLength := range piecesLength {
+		if materialLength < pieceLength {
+			return nil, fmt.Errorf("materialLength < pieceLength: %d < %d", materialLength, pieceLength)
+		}
+	}
+
+	return oneDimensionalCuttingStockProblem{materialLength: materialLength, countPieces: len(piecesLength), piecesLength: piecesLength}, nil
+}
+
+func MakeOneDimensionalCuttingStockProblemFromReader(reader io.Reader) (Task, error) {
+	panic("not implemented")
+}
+
 
 type oneDimensionalCuttingStockProblem struct {
 	materialLength int
@@ -52,7 +69,7 @@ func (problem oneDimensionalCuttingStockProblem) ComputeLowerBound() int {
 	return int(math.Round(float64(result)/float64(problem.GetMaterialLength())))
 }
 
-func (problem oneDimensionalCuttingStockProblem) GetAscendingPermutation() []int {
+func (problem oneDimensionalCuttingStockProblem) GetAllPiecesByAscending() []int {
 	//format idx, pieceLength
 	piecesLengthWithIdx := make([][2]int, problem.GetCountPieces())
 	for idx, pieceLength := range problem.piecesLength {
@@ -70,21 +87,4 @@ func (problem oneDimensionalCuttingStockProblem) GetAscendingPermutation() []int
 	}
 
 	return resultSlice
-}
-
-
-// Constuctors
-func MakeOneDimensionalCuttingStockProblem(materialLength int, piecesLength []int) (Task, error) {	
-	for _, pieceLength := range piecesLength {
-		if materialLength < pieceLength {
-			return nil, fmt.Errorf("materialLength < pieceLength: %d < %d", materialLength, pieceLength)
-		}
-	}
-
-
-	return oneDimensionalCuttingStockProblem{materialLength: materialLength, countPieces: len(piecesLength), piecesLength: piecesLength}, nil
-}
-
-func MakeOneDimensionalCuttingStockProblemFromReader(reader io.Reader) (Task, error) {
-	panic("not implemented")
 }

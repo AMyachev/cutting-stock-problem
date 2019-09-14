@@ -15,13 +15,13 @@ func GreedyAlgorithm(task taskPackage.Task, permutation []int) solutionPackage.S
 		detailCuttedOff := false
 		detailLength := task.GetPieceLength(idxDetail)
 		for idxMaterial := 0; idxMaterial < solution.GetCountUsedMaterials(); idxMaterial++ {
-			if err := solution.CutDetail(idxMaterial, detailLength); err != nil {
+			if err := solution.CutDetail(idxMaterial, idxDetail, detailLength); err != nil {
 				continue	
 			}
 			detailCuttedOff = true
 		}
 		if !detailCuttedOff {
-			solution.CutDetailFromNewMaterial(detailLength)
+			solution.CutDetailFromNewMaterial(idxDetail, detailLength)
 		}
 	}
 
@@ -34,7 +34,7 @@ func CopySliceInts(slice []int) []int {
 }
 
 func GreedyAlgorithmByAscending(task taskPackage.Task) solutionPackage.Solution {
-	permutation := task.GetAscendingPermutation()
+	permutation := task.GetAllPiecesByAscending()
 
 	log.WithFields(log.Fields{
 		"task": task,

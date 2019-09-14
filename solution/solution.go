@@ -9,24 +9,25 @@ type Solution interface {
 	GetCountUsedMaterials() int
 	GetFreeLength(materialNumber int) int
 	GetMaterialLength() int
-	CutDetail(materialNumber int, length int) error
-	CutDetailFromNewMaterial(length int)
-	fixCut(materialNumber int, length int)
+	CutDetail(materialNumber int, detailNumber int, length int) error
+	CutDetailFromNewMaterial(detailNumber int, length int)
+	fixCut(materialNumber int, detailNumber int)
 }
 
-type SolutionImpl struct {
-	materialLength int
-	materialsFreeLength []int
-	piecesMaterials [][]int
-}
-
-//Constructors
+//Facade
 func MakeEmptySolution(materialLength int) Solution {
 	return &SolutionImpl{
 		materialLength: materialLength,
 		materialsFreeLength: []int{},
-		piecesMaterials: [][]int{},
+		piecesNumbersForMaterials: [][]int{},
 	}
+}
+
+
+type SolutionImpl struct {
+	materialLength int
+	materialsFreeLength []int
+	piecesNumbersForMaterials [][]int
 }
 
 
@@ -50,28 +51,28 @@ func (solution *SolutionImpl) GetMaterialLength() int {
 	return solution.materialLength
 }
 
-func (solution *SolutionImpl) CutDetail(materialNumber int, length int) error {
+func (solution *SolutionImpl) CutDetail(materialNumber int, detailNumber int, length int) error {
 	freeLength := solution.GetFreeLength(materialNumber)
 	if length > freeLength {
 		return fmt.Errorf("Error in CutDetail func: length > freeLength")
 	}
 
-	solution.fixCut(materialNumber, length)
+	solution.fixCut(materialNumber, detailNumber)
 	solution.materialsFreeLength[materialNumber] -= length
 	return nil
 }
 
-func (solution *SolutionImpl) CutDetailFromNewMaterial(length int) {
-	solution.fixCut(solution.GetCountUsedMaterials(), length)
+func (solution *SolutionImpl) CutDetailFromNewMaterial(detailNumber int, length int) {
+	solution.fixCut(solution.GetCountUsedMaterials(), detailNumber)
 	solution.materialsFreeLength = append(solution.materialsFreeLength, solution.GetMaterialLength() - length)
 }
 
-func (solution *SolutionImpl) fixCut(materialNumber int, length int) {
+func (solution *SolutionImpl) fixCut(materialNumber int, detailNumber int) {
 	countUsedMaterials := solution.GetCountUsedMaterials()
 	if countUsedMaterials == materialNumber {
-		solution.piecesMaterials = append(solution.piecesMaterials, []int{length})
+		solution.piecesNumbersForMaterials = append(solution.piecesNumbersForMaterials, []int{detailNumber})
 	} else if countUsedMaterials > materialNumber {
-		solution.piecesMaterials[materialNumber] = append(solution.piecesMaterials[materialNumber], length)
+		solution.piecesNumbersForMaterials[materialNumber] = append(solution.piecesNumbersForMaterials[materialNumber], detailNumber)
 	} else {
 		log.WithFields(log.Fields{
 			"materialNumber": materialNumber,
