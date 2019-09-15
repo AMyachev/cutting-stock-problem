@@ -35,17 +35,28 @@ func CopySliceInts(slice []int) []int {
 	return append(newSlice, slice...)
 }
 
-func GreedyAlgorithmByAscending(task taskPackage.Task) solutionPackage.Solution {
+
+func GreedyAlgorithmForAscending(task taskPackage.Task) solutionPackage.Solution {
 	permutation := task.GetAllPiecesByProperty("ascending")
 
 	log.WithFields(log.Fields{
 		"task": task,
 		"permutation": permutation,
-	}).Info("Computing solution by GreedyAlgorithm ...")
+	}).Info("Computing solution by GreedyAlgorithmForAscending ...")
 
 	return GreedyAlgorithm(task, permutation)
 }
 
+func GreedyAlgorithmForDescending(task taskPackage.Task) solutionPackage.Solution {
+	permutation := task.GetAllPiecesByProperty("descending")
+
+	log.WithFields(log.Fields{
+		"task": task,
+		"permutation": permutation,
+	}).Info("Computing solution by GreedyAlgorithmForDescending ...")
+
+	return GreedyAlgorithm(task, permutation)
+}
 
 func pairExchange(permutation *[]int, i int, j int) {
 	if i >= len(*permutation) || j >= len(*permutation) {
