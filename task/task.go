@@ -16,7 +16,7 @@ type Task interface {
 	GetCountPieces() int
 	GetPieceLength(numberPiece int) int
 	ComputeLowerBound() int
-	GetAllPiecesByAscending() []int
+	GetAllPiecesByProperty(property string) []int
 }
 
 
@@ -92,7 +92,7 @@ func (problem oneDimensionalCuttingStockProblem) ComputeLowerBound() int {
 	return int(math.Round(float64(result)/float64(problem.GetMaterialLength())))
 }
 
-func (problem oneDimensionalCuttingStockProblem) GetAllPiecesByAscending() []int {
+func (problem oneDimensionalCuttingStockProblem) GetAllPiecesByProperty(property string) []int {
 	//format idx, pieceLength
 	piecesLengthWithIdx := make([][2]int, problem.GetCountPieces())
 	for idx, pieceLength := range problem.piecesLength {
@@ -100,9 +100,17 @@ func (problem oneDimensionalCuttingStockProblem) GetAllPiecesByAscending() []int
 		piecesLengthWithIdx[idx][1] = pieceLength
 	}
 
-	sort.Slice(piecesLengthWithIdx, func(i, j int) bool {
-		return piecesLengthWithIdx[i][1] < piecesLengthWithIdx[j][1]
-	})
+	if property == "ascending" {
+		sort.Slice(piecesLengthWithIdx, func(i, j int) bool {
+			return piecesLengthWithIdx[i][1] < piecesLengthWithIdx[j][1]
+		})
+	} else if property == "descending" {
+		sort.Slice(piecesLengthWithIdx, func(i, j int) bool {
+			return piecesLengthWithIdx[i][1] > piecesLengthWithIdx[j][1]
+		})
+	} else {
+		panic("not implemented property")
+	}
 
 	resultSlice := make([]int, problem.GetCountPieces())
 	for idx, pieceLengthWitholdIdx := range piecesLengthWithIdx {

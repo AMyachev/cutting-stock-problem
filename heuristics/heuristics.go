@@ -1,6 +1,7 @@
 package heuristics
 
 import (
+	"fmt"
 	taskPackage "csp/task"
 	solutionPackage "csp/solution"
 
@@ -19,6 +20,7 @@ func GreedyAlgorithm(task taskPackage.Task, permutation []int) solutionPackage.S
 				continue	
 			}
 			detailCuttedOff = true
+			break
 		}
 		if !detailCuttedOff {
 			solution.CutDetailFromNewMaterial(idxDetail, detailLength)
@@ -34,7 +36,7 @@ func CopySliceInts(slice []int) []int {
 }
 
 func GreedyAlgorithmByAscending(task taskPackage.Task) solutionPackage.Solution {
-	permutation := task.GetAllPiecesByAscending()
+	permutation := task.GetAllPiecesByProperty("ascending")
 
 	log.WithFields(log.Fields{
 		"task": task,
@@ -42,4 +44,43 @@ func GreedyAlgorithmByAscending(task taskPackage.Task) solutionPackage.Solution 
 	}).Info("Computing solution by GreedyAlgorithm ...")
 
 	return GreedyAlgorithm(task, permutation)
+}
+
+
+func pairExchange(permutation *[]int, i int, j int) {
+	if i >= len(*permutation) || j >= len(*permutation) {
+		log.WithFields(log.Fields{
+			"first_index": i,
+			"secong_index": j,
+			"permutation": permutation,
+		}).Fatal("pairExchange error ...")
+	}
+
+	temp := (*permutation)[i]
+	(*permutation)[i] = (*permutation)[j]
+	(*permutation)[j] = temp
+}
+
+
+func LocalOptimization(task taskPackage.Task, permutation []int) ([]int, solutionPackage.Solution) {
+	computeCriterion := func(task taskPackage.Task, permutation []int) (int, int) {
+		solution := GreedyAlgorithm(task, permutation)
+		return solution.GetCountUsedMaterials(), solution.GetAllFreeLength()
+	}
+
+	bestCriterion, bestAllFreeLength := computeCriterion(task, permutation)
+
+	for idx := 0; idx < task.GetCountPieces() - 1; idx++ {
+		pairExchange(&permutation, idx, idx + 1)
+		tempCriterion, allFreeLength := computeCriterion(task, permutation)
+		if tempCriterion < bestCriterion || (tempCriterion == bestCriterion) && (allFreeLength < bestAllFreeLength) {
+			bestCriterion = tempCriterion
+			bestAllFreeLength = allFreeLength
+			fmt.Println("better")
+			continue
+		}
+		pairExchange(&permutation, idx, idx + 1)
+	}
+
+	return permutation, GreedyAlgorithm(task, permutation)
 }

@@ -8,6 +8,7 @@ import (
 type Solution interface {
 	GetCountUsedMaterials() int
 	GetFreeLength(materialNumber int) int
+	GetAllFreeLength() int
 	GetMaterialLength() int
 	CutDetail(materialNumber int, detailNumber int, length int) error
 	CutDetailFromNewMaterial(detailNumber int, length int)
@@ -45,6 +46,15 @@ func (solution *SolutionImpl) GetFreeLength(materialNumber int) int {
 	}
 
 	return solution.materialsFreeLength[materialNumber]
+}
+
+func (solution *SolutionImpl) GetAllFreeLength() int {
+	allFreeLength := 0
+	for _, freeLength := range solution.materialsFreeLength {
+		allFreeLength += freeLength
+	}
+
+	return allFreeLength
 }
 
 func (solution *SolutionImpl) GetMaterialLength() int {

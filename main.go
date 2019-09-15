@@ -36,11 +36,16 @@ func test1_01_n10() {
 }
 
 func test1_01_n10_file() {
-	fileName := "C:/Users/amyachev/Desktop/UNN/cutting-stock-problem/task_1_01_n10.txt"
+	fileName := "C:/Users/amyachev/Desktop/UNN/cutting-stock-problem/task_1_02_n10.txt"
 	task, err := taskP.MakeOneDimensionalCuttingStockProblemFromFile(fileName)
 	if err != nil {
 		fmt.Println(err)
 	}
 	solution := heuristics.GreedyAlgorithmByAscending(task)
 	fmt.Println(solution)
+	fmt.Println(task.ComputeLowerBound())
+
+	permutation := task.GetAllPiecesByProperty("descending")
+	_, solution2 := heuristics.LocalOptimization(task, permutation)
+	fmt.Println(solution2)
 }
