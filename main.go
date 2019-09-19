@@ -5,7 +5,7 @@ import (
 
 	taskP "csp/task"
 	"csp/heuristics"
-	//"csp/cmd"
+	"csp/cmd"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,8 +16,8 @@ func init() {
 }
 
 func main() {
-	test1_01_n10_file()
-	//cmd.Execute()
+	//test1_01_n10_file()
+	cmd.Execute()
 }
 
 

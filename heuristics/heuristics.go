@@ -113,6 +113,7 @@ func removePiece(permutation *[]int, piece int) {
 func Search(task taskPackage.Task) solutionPackage.Solution {
 	solution := solutionPackage.MakeEmptySolution(task.GetMaterialLength())
 	permutation := task.GetAllPiecesByProperty("descending")
+	allCountPiece := task.GetCountPieces()
 	materialLength := task.GetMaterialLength()
 
 
@@ -138,14 +139,14 @@ func Search(task taskPackage.Task) solutionPackage.Solution {
 
 		bestSolution := 0
 		minFreeLength := materialLength
-		maxCountPieces := 0
+		minCountPieces := allCountPiece
 
 		for idxSolution, solution := range possibleSolutions {
 			freeLength := solution[0]
 			countPieces := len(solution) - 1
-			if (freeLength < minFreeLength) || ((freeLength == minFreeLength) && (countPieces > maxCountPieces)) {
+			if (freeLength < minFreeLength) || ((freeLength == minFreeLength) && (countPieces < minCountPieces)) {
 				minFreeLength = freeLength
-				maxCountPieces = countPieces
+				minCountPieces = countPieces
 				bestSolution = idxSolution
 			}
 		}

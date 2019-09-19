@@ -85,6 +85,5 @@ func computeProblem(taskFile string, algorithm string) {
 	end := time.Now()
 	elapsed := end.Sub(start)
 
-	fmt.Printf("%s == %d; time - %v\n", taskFile, solution.GetCountUsedMaterials(), elapsed)
-	fmt.Println(solution, task.ComputeLowerBound())
+	fmt.Printf("%s \t %s: %d; \t time: %v; \t lower bound: %d\n", taskFile, algorithm, solution.GetCountUsedMaterials(), elapsed, task.ComputeLowerBound())
 }
