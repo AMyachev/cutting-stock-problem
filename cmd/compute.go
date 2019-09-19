@@ -75,6 +75,9 @@ func computeProblem(taskFile string, algorithm string) {
 		permutation := task.GetAllPiecesByProperty("descending")
 		_, solution = heuristics.LocalOptimization(task, permutation)
 		break
+	case "search":
+		solution = heuristics.Search(task)
+		break
 	default:
 		panic("not implemented")
 	}

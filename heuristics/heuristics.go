@@ -95,53 +95,73 @@ func LocalOptimization(task taskPackage.Task, permutation []int) ([]int, solutio
 }
 
 
-func firstNotAssigned(permutationIndexes []int) (int, int) {
-	for position, idx := range permutationIndexes {
-		if idx != -1 {
-			return position, idx
+func removePiece(permutation *[]int, piece int) {
+	idxPiece := -1
+	for idx, currentPiece := range *permutation {
+		if currentPiece == piece {
+			idxPiece = idx
 		}
 	}
+
+	if idxPiece == -1 {
+		panic("removeElem error")
+	}
+
+	*permutation = append((*permutation)[:idxPiece], (*permutation)[idxPiece+1:]...)
 }
 
-func assign(permutationIndexes []int, position int) int {
-	permutationIndexes[position] = -1
-}
-
-func Search(task taskPackage.Task) ([]int, solutionPackage.Solution) {
+func Search(task taskPackage.Task) solutionPackage.Solution {
 	solution := solutionPackage.MakeEmptySolution(task.GetMaterialLength())
 	permutation := task.GetAllPiecesByProperty("descending")
-	assigned_pieces := 0
-	all_pieces := task.GetCountPieces()
 	materialLength := task.GetMaterialLength()
 
 
 	for countUsedMaterial := 0;; countUsedMaterial++ {
-		position, idxPiece := firstNotAssigned(permutation)
-		solution.CutDetailFromNewMaterial(idxPiece, task.GetPieceLength(idxPiece))
-		assign(permutation, position)
-		assigned_pieces++
-		if assigned_pieces == all_pieces {
-			break
+		possibleSolutions := make([][]int, 1)
+
+		//the first element in the solution is remaining the free length
+		possibleSolutions[0] = []int{materialLength}
+		for _, piece := range permutation {
+			for solutionNumber := 0; solutionNumber < len(possibleSolutions); solutionNumber++ {
+				materialFreeLength := possibleSolutions[solutionNumber][0]
+				pieceLength := task.GetPieceLength(piece)
+
+				if pieceLength <= materialFreeLength {
+					//decrease free length
+					possibleSolutions[solutionNumber][0] -= pieceLength
+					possibleSolutions[solutionNumber] = append(possibleSolutions[solutionNumber], piece)
+				}
+			}
+			//add new solution
+			possibleSolutions = append(possibleSolutions, []int{materialLength})
 		}
 
-		materialFreeLength := solution.GetFreeLength(countUsedMaterial)
-		for position, idxPiece := range permutation {
-			if idxPiece == -1 {
-				idxPieceLength := task.GetPieceLength(idxPiece)
-				if idxPieceLength > materialFreeLength {
-					continue
-				} else if idxPieceLength == materialFreeLength {
-					solution.CutDetail(countUsedMaterial, idxPiece, task.GetPieceLength(idxPiece))
-					assign(permutation, position)
-					assigned_pieces++
-					break
-				}
+		bestSolution := 0
+		minFreeLength := materialLength
+		maxCountPieces := 0
+
+		for idxSolution, solution := range possibleSolutions {
+			freeLength := solution[0]
+			countPieces := len(solution) - 1
+			if (freeLength < minFreeLength) || ((freeLength == minFreeLength) && (countPieces > maxCountPieces)) {
+				minFreeLength = freeLength
+				maxCountPieces = countPieces
+				bestSolution = idxSolution
 			}
 		}
 
-		if assigned_pieces == all_pieces {
-			break
+		firstPiece := possibleSolutions[bestSolution][1]
+		removePiece(&permutation, firstPiece)
+		solution.CutDetailFromNewMaterial(firstPiece, task.GetPieceLength(firstPiece))
+		for _, piece := range possibleSolutions[bestSolution][2:] {
+			solution.CutDetail(countUsedMaterial, piece, task.GetPieceLength(piece))
+			removePiece(&permutation, piece)
 		}
 
+		if len(permutation) == 0 {
+			break
+		}
 	}
+
+	return solution
 }

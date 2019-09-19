@@ -5,7 +5,7 @@ import (
 
 	taskP "csp/task"
 	"csp/heuristics"
-	"csp/cmd"
+	//"csp/cmd"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,18 +16,18 @@ func init() {
 }
 
 func main() {
-	//test1_01_n10_file()
-	cmd.Execute()
+	test1_01_n10_file()
+	//cmd.Execute()
 }
 
 
 func test1_01_n10_file() {
-	fileName := "C:/Users/amyachev/Desktop/UNN/cutting-stock-problem/task_1_02_n10.txt"
+	fileName := "example-tasks/task_1_02_n10.txt"
 	task, err := taskP.MakeOneDimensionalCuttingStockProblemFromFile(fileName)
 	if err != nil {
 		fmt.Println(err)
 	}
-	solution := heuristics.GreedyAlgorithmForAscending(task)
+	solution := heuristics.Search(task)
 	fmt.Println(solution)
 	fmt.Println(task.ComputeLowerBound())
 
