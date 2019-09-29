@@ -1,11 +1,9 @@
 package main
 import (
 	"os"
-	"fmt"
 
-	taskP "csp/task"
-	"csp/heuristics"
-	"csp/cmd"
+	//"csp/cmd"
+	"csp/exact_algorithms"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,22 +14,6 @@ func init() {
 }
 
 func main() {
-	//test1_01_n10_file()
-	cmd.Execute()
-}
-
-
-func test1_01_n10_file() {
-	fileName := "example-tasks/task_1_02_n10.txt"
-	task, err := taskP.MakeOneDimensionalCuttingStockProblemFromFile(fileName)
-	if err != nil {
-		fmt.Println(err)
-	}
-	solution := heuristics.Search(task)
-	fmt.Println(solution)
-	fmt.Println(task.ComputeLowerBound())
-
-	permutation := task.GetAllPiecesByProperty("descending")
-	_, solution2 := heuristics.LocalOptimization(task, permutation)
-	fmt.Println(solution2)
+	//cmd.Execute()
+	exact_algorithms.BnB()
 }
