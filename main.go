@@ -9,10 +9,10 @@ import (
 
 func init() {
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.WarnLevel)
 }
 
 func main() {
-	//cmd.Execute()
-	cmd.ComputeDPProblem("example-tasks/delivery-problem/task_2_10_n50.txt", "optimistic", "default", "default")
+	cmd.Execute()
+	//cmd.ComputeDPProblem("example-tasks/delivery-problem/task_2_01_n3.txt", "optimistic", "default", "default-extra-step")
 }

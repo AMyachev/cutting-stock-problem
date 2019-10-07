@@ -24,6 +24,7 @@ type Vertex interface {
 	SetPermutation(permutation []int)
 
 	RemainingPoints() []int
+	String() string
 }
 
 type TaskBnB interface {
@@ -120,14 +121,68 @@ func (task *taskBnB) optimisticBranching() func(a, b interface{}) int {
 	return func(a, b interface{}) int {
 		aVert := a.(Vertex)
 		bVert := b.(Vertex)
-		//aUB := task.UpperBound(aVert)
-		//bUB := task.UpperBound(bVert)
+		aLB := task.LowerBound(aVert)
+		bLB := task.LowerBound(bVert)
 
 		if aVert.ID() == bVert.ID() {
 			return 0
 		}
 
-		if aVert.ID() > bVert.ID() {
+		if aLB < bLB {
+			return -1
+		} else if aLB > bLB {
+			return 1
+		} else {
+			if aVert.ID() > bVert.ID() {
+				return -1
+			} else {
+				return 1
+			}
+		}
+	}
+}
+
+func (task *taskBnB) differenceBranching() func(a, b interface{}) int {
+	return func(a, b interface{}) int {
+		aVert := a.(Vertex)
+		bVert := b.(Vertex)
+		aLB := task.LowerBound(aVert)
+		bLB := task.LowerBound(bVert)
+
+		aUB := task.UpperBound(aVert, false)
+		bUB := task.UpperBound(bVert, false)
+
+		if aVert.ID() == bVert.ID() {
+			return 0
+		}
+
+		aDiff := aUB - aLB
+		bDiff := bUB - bLB
+
+		if aDiff < bDiff {
+			return -1
+		} else if aDiff > bDiff {
+			return 1
+		} else {
+			if aVert.ID() > bVert.ID() {
+				return -1
+			} else {
+				return 1
+			}
+		}
+	}
+}
+
+func (task *taskBnB) widthBranching() func(a, b interface{}) int {
+	return func(a, b interface{}) int {
+		aVert := a.(Vertex)
+		bVert := b.(Vertex)
+
+		if aVert.ID() == bVert.ID() {
+			return 0
+		}
+
+		if aVert.ID() < bVert.ID() {
 			return -1
 		} else {
 			return 1
@@ -141,6 +196,10 @@ func (task *taskBnB) CreateInitVertexSet() *treeset.Set {
 	switch task.branchingStrategy {
 	case "optimistic":
 		comparator = task.optimisticBranching()
+	case "width":
+		comparator = task.widthBranching()
+	case "difference":
+		comparator = task.differenceBranching()
 	default:
 		panic("not implemented")
 	}
@@ -239,12 +298,56 @@ func (task *taskBnB) upperBoundDefault(vertex Vertex, modificate bool) int {
 	return crit
 }
 
+func (task *taskBnB) upperBoundExtraSteps(vertex Vertex, modificate bool) int {
+	var currentTime int
+	var posPoint int
+	countRemainingPoints := len(vertex.RemainingPoints())
+	newPermutation := vertex.Permutation()
+	newRemainingPoints := CopySliceInts(vertex.RemainingPoints(), countRemainingPoints)
+
+	for i := 0; i < countRemainingPoints; i++ {
+		lastPoint := newPermutation[len(newPermutation) - 1]
+		minTime := 10000000
+
+		countNewRemainingPoints := len(newRemainingPoints)
+		for j := 0; j < countNewRemainingPoints; j++ {
+			for k := 0; k < countNewRemainingPoints; k++ {
+				if j == k {
+					posPoint = 0
+					break
+				}
+				currentTime = task.DeliveryTime(lastPoint, newRemainingPoints[j]) + task.DeliveryTime(newRemainingPoints[j], newRemainingPoints[k])
+				if currentTime < minTime {
+					minTime = currentTime
+					posPoint = j
+				}
+			}
+		} 
+		newPermutation = append(newPermutation, newRemainingPoints[posPoint])
+
+		if posPoint == len(newRemainingPoints) - 1 {
+			//Removed last elem
+			newRemainingPoints = newRemainingPoints[:posPoint]
+		} else {
+			newRemainingPoints = append(newRemainingPoints[:posPoint], newRemainingPoints[posPoint+1:]...)
+		}
+	}
+
+	crit, _ := task.Criterion(newPermutation)
+	if modificate {
+		vertex.SetPermutation(newPermutation)
+	}
+	return crit
+}
+
 func (task *taskBnB) UpperBound(vertex Vertex, modificate bool) int {
 	currentUpperBound := vertex.UpperBound()
 	if modificate || currentUpperBound == -1 {
 		switch task.upperBoundStrategy {
 		case "default":
 			currentUpperBound = task.upperBoundDefault(vertex, modificate)
+		case "default-extra-step":
+			currentUpperBound = task.upperBoundExtraSteps(vertex, modificate)
 		default:
 			panic("not implemented")
 		}
@@ -364,7 +467,10 @@ func (vert *vertexImpl) RemainingPoints() []int {
 	return vert.remainingPoints
 }
 
-
+func (vert *vertexImpl) String() string {
+	pattern := "id - %d\n permutation - %v\n criterion - %d"
+	return fmt.Sprintf(pattern, vert.id, vert.permutation, vert.upperBound)
+}
 
 func CopySliceInts(slice []int, cap int) []int {
 	newSlice := make([]int, cap)

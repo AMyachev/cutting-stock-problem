@@ -40,10 +40,10 @@ var computeDPCmd = &cobra.Command{
 		if deliveryProblemFile != "" {
 			ComputeDPProblem(deliveryProblemFile, branchingStrategy, lowerBoundStrategy, upperBoundStrategy)
 		} else {
-			files, err := ioutil.ReadDir(taskDir)
+			files, err := ioutil.ReadDir(deliveryProblemsDir)
 			if err != nil {
 				log.WithFields(log.Fields{
-					"taskDir": taskDir,
+					"deliveryProblemsDir": deliveryProblemsDir,
 				}).Fatalf("computeDPCmd: %s", err)
 			}
 		
@@ -58,9 +58,8 @@ func ComputeDPProblem(taskFile, branchingStrategy, lowerBoundStrategy, upperBoun
 	start := time.Now()
 	taskDP := task.MakeDeliveryProblemFromFile(taskFile, branchingStrategy, lowerBoundStrategy, upperBoundStrategy)
 	bestVertex, countTraversedVertexes := exact_algorithms.BnB(taskDP)
-	fmt.Println("best Vertex: ", bestVertex)
-	fmt.Println("countTraversedVertexes: ", countTraversedVertexes)
+
 	end := time.Now()
 	elapsed := end.Sub(start)
-	fmt.Printf("time: %v", elapsed)
+	fmt.Printf("best Vertex: %v\n countTraversedVertexes: %d\n time: %v\n\n", bestVertex, countTraversedVertexes, elapsed)
 }
