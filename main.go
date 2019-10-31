@@ -2,8 +2,7 @@ package main
 import (
 	"os"
 
-	//"csp/cmd"
-	"csp/exact_algorithms"
+	"csp/cmd"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,6 +13,6 @@ func init() {
 }
 
 func main() {
-	//cmd.Execute()
-	exact_algorithms.BnB()
+	cmd.Execute()
+	//cmd.ComputeDPProblem("example-tasks/delivery-problem/task_2_01_n3.txt", "optimistic", "default", "default-extra-step")
 }

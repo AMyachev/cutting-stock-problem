@@ -15,10 +15,10 @@ import (
 )
 
 func init() {
-	taskDir = "example-tasks"
+	taskDir = "example-tasks/1DCSP"
 
 	rootCmd.AddCommand(computeCmd)
-	computeCmd.Flags().StringVar(&taskFile, "task-file", "", "path to task-file (required)")
+	computeCmd.Flags().StringVar(&taskFile, "task-file", "", "path to task-file")
 	computeCmd.Flags().StringVar(&algorithm, "algo", "greedy-for-ascending", "algorithm that would be used for computation: {greedy-for-ascending, greedy-for-descending, local-optim-descending, search}")
 	computeCmd.Flags().StringVar(&deviation, "deviation", "lower-bound", "the value relative to which the deviation will be calculated: {lower-bound, greedy-value}")
 }

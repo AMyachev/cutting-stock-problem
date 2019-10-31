@@ -1,0 +1,144 @@
+C:\Users\Толик\Desktop\спец.семинар\спецсеминар1\cutting-stock-problem>csp.exe computeDP --branching=width
+example-tasks\delivery-problem\task_2_01_n3.txt
+best Vertex: id - 0
+ permutation - [0 3 1 2]
+ criterion - 0
+ countTraversedVertexes: 1
+ time: 1ms
+
+example-tasks\delivery-problem\task_2_02_n3.txt
+best Vertex: id - 0
+ permutation - [0 2 1 3]
+ criterion - 2
+ countTraversedVertexes: 1
+ time: 0s
+
+example-tasks\delivery-problem\task_2_03_n10.txt
+best Vertex: id - 358
+ permutation - [0 2 1 3 4 8 7 9 10 6 5]
+ criterion - 4
+ countTraversedVertexes: 472
+ time: 2.0001ms
+
+example-tasks\delivery-problem\task_2_04_n10.txt
+best Vertex: id - 403
+ permutation - [0 1 2 5 3 8 7 6 10 9 4]
+ criterion - 3
+ countTraversedVertexes: 413
+ time: 1.0001ms
+
+example-tasks\delivery-problem\task_2_05_n10.txt
+best Vertex: id - 1
+ permutation - [0 1 4 5 2 3 7 9 6 10 8]
+ criterion - 4
+ countTraversedVertexes: 191
+ time: 1.0001ms
+
+example-tasks\delivery-problem\task_2_06_n15.txt
+best Vertex: id - 0
+ permutation - [0 1 5 3 2 4 12 13 11 15 14 10 7 6 8 9]
+ criterion - 2
+ countTraversedVertexes: 1
+ time: 1ms
+
+example-tasks\delivery-problem\task_2_07_n15.txt
+best Vertex: id - 12363
+ permutation - [0 5 4 2 1 3 15 14 13 10 11 12 8 9 6 7]
+ criterion - 2
+ countTraversedVertexes: 15856
+ time: 28.0016ms
+
+example-tasks\delivery-problem\task_2_08_n50.txt
+best Vertex: id - 3100108
+ permutation - [0 9 11 15 1 2 4 7 14 6 12 8 10 13 3 5 16 34 40 45 39 43 37 38 47 42 33 36 41 46 50 35 49 44 48 17 27 21 30 19 25 20 18 24 26 32 28 23 31 22 29]
+ criterion - 3
+ countTraversedVertexes: 3437888
+ time: 21.7362433s
+
+example-tasks\delivery-problem\task_2_09_n50.txt
+best Vertex: id - 159
+ permutation - [0 14 4 3 15 8 9 10 12 5 11 6 1 2 7 16 13 50 33 40 37 42 49 34 35 41 36 44 48 38 45 39 46 43 47 32 28 26 23 20 25 31 27 17 22 18 24 21 29 19 30]
+ criterion - 1
+ countTraversedVertexes: 195
+ time: 2.0001ms
+
+example-tasks\delivery-problem\task_2_10_n50.txt
+best Vertex: id - 4921218
+ permutation - [0 12 14 11 1 5 15 2 3 6 10 9 8 7 13 16 4 40 33 34 36 35 50 43 41 42 38 39 44 45 48 47 49 37 46 17 26 22 25 29 32 20 21 19 23 28 30 31 18 24 27]
+ criterion - 2
+ countTraversedVertexes: 4921255
+ time: 30.6787547s
+
+
+
+C:\Users\Толик\Desktop\спец.семинар\спецсеминар1\cutting-stock-problem>csp.exe computeDP --branching=optimistic
+example-tasks\delivery-problem\task_2_01_n3.txt
+best Vertex: id - 0
+ permutation - [0 3 1 2]
+ criterion - 0
+ countTraversedVertexes: 1
+ time: 1ms
+
+example-tasks\delivery-problem\task_2_02_n3.txt
+best Vertex: id - 0
+ permutation - [0 2 1 3]
+ criterion - 2
+ countTraversedVertexes: 1
+ time: 0s
+
+example-tasks\delivery-problem\task_2_03_n10.txt
+best Vertex: id - 358
+ permutation - [0 2 1 3 4 8 7 9 10 6 5]
+ criterion - 4
+ countTraversedVertexes: 472
+ time: 2.0001ms
+
+example-tasks\delivery-problem\task_2_04_n10.txt
+best Vertex: id - 358
+ permutation - [0 4 5 2 3 8 7 6 10 9 1]
+ criterion - 3
+ countTraversedVertexes: 361
+ time: 1.0001ms
+
+example-tasks\delivery-problem\task_2_05_n10.txt
+best Vertex: id - 1
+ permutation - [0 1 4 5 2 3 7 9 6 10 8]
+ criterion - 4
+ countTraversedVertexes: 191
+ time: 1.0001ms
+
+example-tasks\delivery-problem\task_2_06_n15.txt
+best Vertex: id - 0
+ permutation - [0 1 5 3 2 4 12 13 11 15 14 10 7 6 8 9]
+ criterion - 2
+ countTraversedVertexes: 1
+ time: 1ms
+
+example-tasks\delivery-problem\task_2_07_n15.txt
+best Vertex: id - 8239
+ permutation - [0 1 2 4 3 5 14 15 10 11 12 13 8 9 6 7]
+ criterion - 2
+ countTraversedVertexes: 8241
+ time: 25.0014ms
+
+example-tasks\delivery-problem\task_2_08_n50.txt
+best Vertex: id - 3367174
+ permutation - [0 16 9 15 5 2 1 4 7 14 6 12 8 10 13 11 3 34 40 45 39 43 37 38 47 42 33 36 41 46 50 35 49 44 48 17 27 21 30 19 25 20 18 24 26 32 28 23 31 22 29]
+ criterion - 3
+ countTraversedVertexes: 3437888
+ time: 33.0368896s
+
+example-tasks\delivery-problem\task_2_09_n50.txt
+best Vertex: id - 159
+ permutation - [0 14 4 3 15 8 9 10 12 5 11 6 1 2 7 16 13 50 33 40 37 42 49 34 35 41 36 44 48 38 45 39 46 43 47 32 28 26 23 20 25 31 27 17 22 18 24 21 29 19 30]
+ criterion - 1
+ countTraversedVertexes: 195
+ time: 2.0001ms
+
+example-tasks\delivery-problem\task_2_10_n50.txt
+best Vertex: id - 1060068
+ permutation - [0 12 14 11 1 5 15 2 3 6 10 9 8 7 13 16 4 40 33 34 36 35 50 43 41 42 38 39 44 45 48 47 49 37 46 17 26 22 25 29 32 20 21 19 23 28 30 31 18 24 27]
+ criterion - 2
+ countTraversedVertexes: 1060105
+ time: 9.5525464s
+

@@ -29,12 +29,6 @@ func GreedyAlgorithm(task taskPackage.Task, permutation []int) solutionPackage.S
 	return solution
 }
 
-func CopySliceInts(slice []int) []int {
-	newSlice := make([]int, 0)
-	return append(newSlice, slice...)
-}
-
-
 func GreedyAlgorithmForAscending(task taskPackage.Task) solutionPackage.Solution {
 	permutation := task.GetAllPiecesByProperty("ascending")
 
