@@ -1,12 +1,13 @@
 package task
 
 import (
+	"fmt"
 	"io/ioutil"
+	"strconv"
+	"strings"
+
 	"github.com/emirpasic/gods/sets/treeset"
 	log "github.com/sirupsen/logrus"
-	"strings"
-	"strconv"
-	"fmt"
 )
 
 type Vertex interface {
@@ -51,7 +52,7 @@ type taskBnB struct {
 	// (dimension + 1) x (dimension + 1)
 	deliveryTimes [][]int
 
-	branchingStrategy string
+	branchingStrategy  string
 	lowerBoundStrategy string
 	upperBoundStrategy string
 
@@ -64,9 +65,9 @@ func MakeDeliveryProblemFromFile(taskFile, branchingStrategy, lowerBoundStrategy
 	if err != nil {
 		log.Fatal(err)
 	}
-  
+
 	contentLines := strings.Split(string(content), "\n")
-	
+
 	dimension, err := strconv.Atoi(strings.TrimSpace(contentLines[0]))
 	if err != nil {
 		log.Fatal(err)
@@ -81,10 +82,10 @@ func MakeDeliveryProblemFromFile(taskFile, branchingStrategy, lowerBoundStrategy
 		}
 	}
 
-	deliveryTimes := make([][]int, dimension + 1)
-	for i := 0; i < dimension + 1; i++ {
-		deliveryTimesString := strings.Split(strings.TrimSpace(contentLines[2 + i]), "\t")
-		deliveryTimesInt := make([]int, dimension + 1)
+	deliveryTimes := make([][]int, dimension+1)
+	for i := 0; i < dimension+1; i++ {
+		deliveryTimesString := strings.Split(strings.TrimSpace(contentLines[2+i]), "\t")
+		deliveryTimesInt := make([]int, dimension+1)
 		for pos, value := range deliveryTimesString {
 			deliveryTimesInt[pos], err = strconv.Atoi(value)
 			if err != nil {
@@ -95,24 +96,24 @@ func MakeDeliveryProblemFromFile(taskFile, branchingStrategy, lowerBoundStrategy
 	}
 
 	log.WithFields(log.Fields{
-		"dimension": dimension,
+		"dimension":      dimension,
 		"directiveTimes": directiveTimesInt,
-		"deliveryTimes": deliveryTimes,
+		"deliveryTimes":  deliveryTimes,
 
-		"branchingStrategy": branchingStrategy,
-		"lowerBoundStrategy": lowerBoundStrategy,
-		"upperBoundStrategy": upperBoundStrategy,
+		"branchingStrategy":      branchingStrategy,
+		"lowerBoundStrategy":     lowerBoundStrategy,
+		"upperBoundStrategy":     upperBoundStrategy,
 		"countTraversedVertexes": 0,
 	}).Info("creating taskBnB ...")
 
 	return &taskBnB{
-		dimension: dimension,
+		dimension:      dimension,
 		directiveTimes: directiveTimesInt,
-		deliveryTimes: deliveryTimes,
+		deliveryTimes:  deliveryTimes,
 
-		branchingStrategy: branchingStrategy,
-		lowerBoundStrategy: lowerBoundStrategy,
-		upperBoundStrategy: upperBoundStrategy,
+		branchingStrategy:      branchingStrategy,
+		lowerBoundStrategy:     lowerBoundStrategy,
+		upperBoundStrategy:     upperBoundStrategy,
 		countTraversedVertexes: 0,
 	}
 }
@@ -232,17 +233,57 @@ func (task *taskBnB) DirectiveTime(point int) int {
 func (task *taskBnB) lowerBoundDefault(vertex Vertex) int {
 	permutation := vertex.Permutation()
 	result, endTime := task.Criterion(permutation)
-	lastPoint := permutation[len(permutation) - 1]
+	lastPoint := permutation[len(permutation)-1]
 
 	for _, remainPoint := range vertex.RemainingPoints() {
 		currentTime := endTime + task.DeliveryTime(lastPoint, remainPoint)
 		//exclude zero point: -1
-		if currentTime > task.DirectiveTime(remainPoint - 1) {
+		if currentTime > task.DirectiveTime(remainPoint-1) {
 			result++
 		}
 	}
 
 	return result
+}
+
+func (task *taskBnB) lowerBoundExtra(vertex Vertex) int {
+	permutation := vertex.Permutation()
+	result, endTime := task.Criterion(permutation)
+	lastPoint := permutation[len(permutation)-1]
+	minResult := -1
+
+	if len(vertex.RemainingPoints()) == 0 {
+		return result
+	}
+
+	for _, firstAddedPoint := range vertex.RemainingPoints() {
+		newResult := result
+		currentTime1 := endTime + task.DeliveryTime(lastPoint, firstAddedPoint)
+		//exclude zero point: -1
+		if currentTime1 > task.DirectiveTime(firstAddedPoint-1) {
+			newResult++
+		}
+
+		for _, secondAddedPoint := range vertex.RemainingPoints() {
+			if firstAddedPoint == secondAddedPoint {
+				continue
+			}
+
+			currentTime2 := currentTime1 + task.DeliveryTime(firstAddedPoint, secondAddedPoint)
+			//exclude zero point: -1
+			if currentTime2 > task.DirectiveTime(secondAddedPoint-1) {
+				newResult++
+			}
+		}
+
+		if minResult == -1 {
+			minResult = newResult
+		} else if newResult < minResult {
+			minResult = newResult
+		}
+	}
+
+	return minResult
 }
 
 func (task *taskBnB) LowerBound(vertex Vertex) int {
@@ -256,6 +297,8 @@ func (task *taskBnB) LowerBound(vertex Vertex) int {
 	switch task.lowerBoundStrategy {
 	case "default":
 		lowerBound = task.lowerBoundDefault(vertex)
+	case "extra-step":
+		lowerBound = task.lowerBoundExtra(vertex)
 	default:
 		panic("not implemented")
 	}
@@ -272,7 +315,7 @@ func (task *taskBnB) upperBoundDefault(vertex Vertex, modificate bool) int {
 	newRemainingPoints := CopySliceInts(vertex.RemainingPoints(), countRemainingPoints)
 
 	for i := 0; i < countRemainingPoints; i++ {
-		lastPoint := newPermutation[len(newPermutation) - 1]
+		lastPoint := newPermutation[len(newPermutation)-1]
 		minTime := 10000000
 		for pos, remainingPoint := range newRemainingPoints {
 			currentTime = task.DeliveryTime(lastPoint, remainingPoint)
@@ -283,7 +326,7 @@ func (task *taskBnB) upperBoundDefault(vertex Vertex, modificate bool) int {
 		}
 		newPermutation = append(newPermutation, newRemainingPoints[posPoint])
 
-		if posPoint == len(newRemainingPoints) - 1 {
+		if posPoint == len(newRemainingPoints)-1 {
 			//Removed last elem
 			newRemainingPoints = newRemainingPoints[:posPoint]
 		} else {
@@ -306,7 +349,7 @@ func (task *taskBnB) upperBoundExtraSteps(vertex Vertex, modificate bool) int {
 	newRemainingPoints := CopySliceInts(vertex.RemainingPoints(), countRemainingPoints)
 
 	for i := 0; i < countRemainingPoints; i++ {
-		lastPoint := newPermutation[len(newPermutation) - 1]
+		lastPoint := newPermutation[len(newPermutation)-1]
 		minTime := 10000000
 
 		countNewRemainingPoints := len(newRemainingPoints)
@@ -322,10 +365,10 @@ func (task *taskBnB) upperBoundExtraSteps(vertex Vertex, modificate bool) int {
 					posPoint = j
 				}
 			}
-		} 
+		}
 		newPermutation = append(newPermutation, newRemainingPoints[posPoint])
 
-		if posPoint == len(newRemainingPoints) - 1 {
+		if posPoint == len(newRemainingPoints)-1 {
 			//Removed last elem
 			newRemainingPoints = newRemainingPoints[:posPoint]
 		} else {
@@ -368,9 +411,9 @@ func (task *taskBnB) CountTraversedVertexes() int {
 func (task *taskBnB) Criterion(permutation []int) (int, int) {
 	result := 0
 	currentTime := 0
-	for i := 0; i < len(permutation) - 1; i++ {
+	for i := 0; i < len(permutation)-1; i++ {
 		currentTime += task.DeliveryTime(permutation[i], permutation[i+1])
-		if currentTime > task.DirectiveTime(permutation[i+1] - 1) {
+		if currentTime > task.DirectiveTime(permutation[i+1]-1) {
 			//late
 			result++
 		}
@@ -379,8 +422,8 @@ func (task *taskBnB) Criterion(permutation []int) (int, int) {
 }
 
 type vertexImpl struct {
-	id int
-	permutation []int
+	id              int
+	permutation     []int
 	remainingPoints []int
 
 	upperBound int
@@ -389,8 +432,8 @@ type vertexImpl struct {
 
 func MakeVertex(permutation []int, remainingPoints []int, id int) Vertex {
 	return &vertexImpl{
-		id: id,
-		permutation: permutation,
+		id:              id,
+		permutation:     permutation,
 		remainingPoints: remainingPoints,
 
 		upperBound: -1,
@@ -431,7 +474,7 @@ func (vert *vertexImpl) NextVertexes(task TaskBnB) (Vertex, []Vertex) {
 	for i := 0; i < countRemainingPoints; i++ {
 		remainingPoints := CopySliceInts(vert.remainingPoints, countRemainingPoints)
 
-		permutation := CopySliceInts(vert.permutation, countPermutationPoints + 1)
+		permutation := CopySliceInts(vert.permutation, countPermutationPoints+1)
 		permutation[countPermutationPoints] = remainingPoints[i]
 
 		if i < (countRemainingPoints - 1) {
