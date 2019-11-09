@@ -54,13 +54,15 @@ var computeDPCmd = &cobra.Command{
 				}).Fatalf("computeDPCmd: %s", err)
 			}
 
-			var deviat float64 = 0
+			var sumDeviat float64 = 0
 			for _, file := range files {
-				deviat += ComputeDPProblem(filepath.Join(deliveryProblemsDir, file.Name()), branchingStrategy, lowerBoundStrategy, upperBoundStrategy, getDeviation)
+				deviat := ComputeDPProblem(filepath.Join(deliveryProblemsDir, file.Name()), branchingStrategy, lowerBoundStrategy, upperBoundStrategy, getDeviation)
+				fmt.Printf("deviation: %f\n\n", deviat)
+				sumDeviat += deviat
 			}
 
 			if getDeviation {
-				averageDeviation := deviat / float64(len(files))
+				averageDeviation := sumDeviat / float64(len(files))
 				fmt.Printf("averageDeviation: %f", averageDeviation)
 			}
 		}
