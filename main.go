@@ -1,8 +1,10 @@
 package main
+
 import (
+	"fmt"
 	"os"
 
-	"csp/cmd"
+	"csp/task/knapsack"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -13,6 +15,12 @@ func init() {
 }
 
 func main() {
-	cmd.Execute()
-	//cmd.ComputeDPProblem("example-tasks/delivery-problem/task_2_01_n3.txt", "optimistic", "default", "default-extra-step")
+	//cmd.Execute()
+
+	task := knapsack.MakeKnapsackProblemTest()
+
+	order := []int{0, 1, 2, 3, 4}
+	solution, criterion := task.RecursiveSolution(order, task.GetCompanyPerfomance(), false)
+
+	fmt.Println(solution, criterion)
 }
