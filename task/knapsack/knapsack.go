@@ -146,6 +146,67 @@ func (problem *knapsackProblem) RecursiveSolution(permutation []int, remainingPe
 	return solution, criterion
 }
 
+func (problem *knapsackProblem) TableSolutionByDefault(remainingPerformance int) (criterion int) {
+	countOrders := problem.GetCountOrders()
+	permutation := make([]int, countOrders)
+	for i := 0; i < countOrders; i++ {
+		permutation[i] = i
+	}
+
+	return problem.TableSolution(permutation, remainingPerformance)
+}
+
+func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerformance int) (criterion int) {
+	firstColumn := make([]int, remainingPerformance)
+	secondColumn := make([]int, remainingPerformance)
+	twoColumns := [][]int{firstColumn, secondColumn}
+
+	firstElem := permutation[0]
+	firstElemComplexity := problem.complexityOrders[firstElem]
+	firstElemCost := problem.costOrders[firstElem]
+
+	// fill first column
+	for currentPerformance := 0; currentPerformance < remainingPerformance; currentPerformance++ {
+		if firstElemComplexity <= currentPerformance {
+			twoColumns[0][currentPerformance] = firstElemCost
+		} else {
+			twoColumns[0][currentPerformance] = 0
+		}
+	}
+
+	countOrders := problem.GetCountOrders()
+	// fill other columns
+	for idxOrder := 1; idxOrder < countOrders; idxOrder++ {
+		for currentPerformance := 0; currentPerformance < remainingPerformance; currentPerformance++ {
+			// from previous column
+			criterion := twoColumns[0][currentPerformance]
+
+			idxCurrentOrder := permutation[idxOrder]
+			complexityCurrentOrder := problem.complexityOrders[idxCurrentOrder]
+			costCurrentOrder := problem.costOrders[idxCurrentOrder]
+
+			if complexityCurrentOrder <= currentPerformance {
+				secondCriterion := costCurrentOrder + twoColumns[0][currentPerformance-complexityCurrentOrder]
+				if secondCriterion > criterion {
+					criterion = secondCriterion
+				}
+			}
+
+			twoColumns[1][currentPerformance] = criterion
+		}
+
+		// swap column; doesn't swap when last iteration
+		if idxOrder != countOrders-1 {
+			tempColumn := twoColumns[0]
+			twoColumns[0] = twoColumns[1]
+			twoColumns[1] = tempColumn
+		}
+	}
+
+	// upper right corner
+	return twoColumns[1][remainingPerformance-1]
+}
+
 func (problem *knapsackProblem) GetCountOrders() int {
 	return problem.countOrders
 }

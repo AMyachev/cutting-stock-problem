@@ -18,12 +18,17 @@ func init() {
 func main() {
 	//cmd.Execute()
 
-	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_10_n1000.txt")
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_01_n5.txt")
 
 	start := time.Now()
-	solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
+	//solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
 
-	fmt.Println(solution, criterion)
+	//fmt.Println(solution, criterion)
+
+	criterion := task.TableSolutionByDefault(task.GetCompanyPerfomance())
+
+	fmt.Println(criterion)
+
 	end := time.Now()
 	fmt.Println("time: ", end.Sub(start))
 }
