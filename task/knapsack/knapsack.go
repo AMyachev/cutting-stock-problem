@@ -174,7 +174,7 @@ func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerfor
 		}
 	}
 
-	countOrders := problem.GetCountOrders()
+	countOrders := len(permutation)
 	// fill other columns
 	for idxOrder := 1; idxOrder < countOrders; idxOrder++ {
 		for currentPerformance := 1; currentPerformance <= remainingPerformance; currentPerformance++ {
