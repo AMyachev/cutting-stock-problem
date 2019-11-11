@@ -17,7 +17,7 @@ func init() {
 func main() {
 	//cmd.Execute()
 
-	task := knapsack.MakeKnapsackProblemTest()
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_01_n5.txt")
 
 	order := []int{0, 1, 2, 3, 4}
 	solution, criterion := task.RecursiveSolution(order, task.GetCompanyPerfomance(), false)

@@ -1,5 +1,13 @@
 package knapsack
 
+import (
+	"io/ioutil"
+	"strconv"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
+)
+
 type knapsackProblem struct {
 	companyPerformance int
 	countOrders        int
@@ -13,6 +21,50 @@ func MakeKnapsackProblemTest() *knapsackProblem {
 		countOrders:        5,
 		complexityOrders:   []int{4, 5, 4, 3, 2},
 		costOrders:         []int{2, 3, 2, 3, 1},
+	}
+}
+
+func MakeMakeKnapsackProblemFromFile(taskFile string) *knapsackProblem {
+	content, err := ioutil.ReadFile(taskFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contentLines := strings.Split(string(content), "\n")
+
+	companyPerformance, err := strconv.Atoi(strings.TrimSpace(contentLines[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	countOrders, err := strconv.Atoi(strings.TrimSpace(contentLines[1]))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	complexityOrdersString := strings.Split(strings.TrimSpace(contentLines[2]), " ")
+	complexityOrdersInt := make([]int, countOrders)
+	for pos, value := range complexityOrdersString {
+		complexityOrdersInt[pos], err = strconv.Atoi(value)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	costOrdersString := strings.Split(strings.TrimSpace(contentLines[3]), " ")
+	costOrdersInt := make([]int, countOrders)
+	for pos, value := range costOrdersString {
+		costOrdersInt[pos], err = strconv.Atoi(value)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return &knapsackProblem{
+		companyPerformance: companyPerformance,
+		countOrders:        countOrders,
+		complexityOrders:   complexityOrdersInt,
+		costOrders:         costOrdersInt,
 	}
 }
 
