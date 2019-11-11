@@ -157,8 +157,8 @@ func (problem *knapsackProblem) TableSolutionByDefault(remainingPerformance int)
 }
 
 func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerformance int) (criterion int) {
-	firstColumn := make([]int, remainingPerformance)
-	secondColumn := make([]int, remainingPerformance)
+	firstColumn := make([]int, remainingPerformance+1)
+	secondColumn := make([]int, remainingPerformance+1)
 	twoColumns := [][]int{firstColumn, secondColumn}
 
 	firstElem := permutation[0]
@@ -166,7 +166,7 @@ func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerfor
 	firstElemCost := problem.costOrders[firstElem]
 
 	// fill first column
-	for currentPerformance := 0; currentPerformance < remainingPerformance; currentPerformance++ {
+	for currentPerformance := 1; currentPerformance <= remainingPerformance; currentPerformance++ {
 		if firstElemComplexity <= currentPerformance {
 			twoColumns[0][currentPerformance] = firstElemCost
 		} else {
@@ -177,7 +177,7 @@ func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerfor
 	countOrders := problem.GetCountOrders()
 	// fill other columns
 	for idxOrder := 1; idxOrder < countOrders; idxOrder++ {
-		for currentPerformance := 0; currentPerformance < remainingPerformance; currentPerformance++ {
+		for currentPerformance := 1; currentPerformance <= remainingPerformance; currentPerformance++ {
 			// from previous column
 			criterion := twoColumns[0][currentPerformance]
 
@@ -204,7 +204,7 @@ func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerfor
 	}
 
 	// upper right corner
-	return twoColumns[1][remainingPerformance-1]
+	return twoColumns[1][remainingPerformance]
 }
 
 func (problem *knapsackProblem) GetCountOrders() int {

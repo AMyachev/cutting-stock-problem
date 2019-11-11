@@ -18,7 +18,7 @@ func init() {
 func main() {
 	//cmd.Execute()
 
-	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_01_n5.txt")
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_10_n1000.txt")
 
 	start := time.Now()
 	//solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
