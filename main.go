@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"csp/task/knapsack"
 
@@ -17,9 +18,12 @@ func init() {
 func main() {
 	//cmd.Execute()
 
-	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_02_n5.txt")
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_10_n1000.txt")
 
-	solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), false)
+	start := time.Now()
+	solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
 
 	fmt.Println(solution, criterion)
+	end := time.Now()
+	fmt.Println("time: ", end.Sub(start))
 }

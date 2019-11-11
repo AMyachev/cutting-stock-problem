@@ -8,6 +8,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type returnValueStruct struct {
+	solution  []bool
+	criterion int
+}
+
+var cache map[int]map[int]*returnValueStruct
+
+func init() {
+	cache = make(map[int]map[int]*returnValueStruct)
+}
+
 type knapsackProblem struct {
 	companyPerformance int
 	countOrders        int
@@ -80,8 +91,12 @@ func (problem *knapsackProblem) RecursiveSolutionDefaultOrder(remainingPerforman
 }
 
 func (problem *knapsackProblem) RecursiveSolution(permutation []int, remainingPerformance int, doCache bool) (solution []bool, criterion int) {
+	// read cache
 	if doCache {
-		panic("not implemented")
+		returnValues, ok := cache[len(permutation)][remainingPerformance]
+		if ok {
+			return returnValues.solution, returnValues.criterion
+		}
 	}
 
 	// dimension ~ k
@@ -112,6 +127,20 @@ func (problem *knapsackProblem) RecursiveSolution(permutation []int, remainingPe
 			solution = secondSolution
 			criterion = secondCriterion
 		}
+	}
+
+	// setup cache
+	if doCache {
+		returnValues := &returnValueStruct{
+			solution:  solution,
+			criterion: criterion,
+		}
+
+		if cache[len(permutation)] == nil {
+			cache[len(permutation)] = make(map[int]*returnValueStruct)
+		}
+
+		cache[len(permutation)][remainingPerformance] = returnValues
 	}
 
 	return solution, criterion
