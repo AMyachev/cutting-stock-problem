@@ -2,6 +2,7 @@ package knapsack
 
 import (
 	"io/ioutil"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -205,6 +206,23 @@ func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerfor
 
 	// upper right corner
 	return twoColumns[1][remainingPerformance]
+}
+
+func (problem *knapsackProblem) DefaultSort() (permutation []int) {
+	permutation = make([]int, problem.GetCountOrders())
+
+	// init
+	for i := 0; i < problem.GetCountOrders(); i++ {
+		permutation[i] = i
+	}
+
+	sort.Slice(permutation, func(i, j int) bool {
+		firstRatio := float64(problem.costOrders[permutation[i]]) / float64(problem.complexityOrders[permutation[i]])
+		secondRatio := float64(problem.costOrders[permutation[j]]) / float64(problem.complexityOrders[permutation[j]])
+		return firstRatio > secondRatio
+	})
+
+	return permutation
 }
 
 func (problem *knapsackProblem) GetCountOrders() int {
