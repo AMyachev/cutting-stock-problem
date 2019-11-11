@@ -225,6 +225,21 @@ func (problem *knapsackProblem) DefaultSort() (permutation []int) {
 	return permutation
 }
 
+func (problem *knapsackProblem) CostSort() (permutation []int) {
+	permutation = make([]int, problem.GetCountOrders())
+
+	// init
+	for i := 0; i < problem.GetCountOrders(); i++ {
+		permutation[i] = i
+	}
+
+	sort.Slice(permutation, func(i, j int) bool {
+		return problem.costOrders[permutation[i]] > problem.costOrders[permutation[j]]
+	})
+
+	return permutation
+}
+
 func (problem *knapsackProblem) GetCountOrders() int {
 	return problem.countOrders
 }
