@@ -68,6 +68,17 @@ func MakeMakeKnapsackProblemFromFile(taskFile string) *knapsackProblem {
 	}
 }
 
+// Wrapper for RecursiveSolution
+func (problem *knapsackProblem) RecursiveSolutionDefaultOrder(remainingPerformance int, doCache bool) (solution []bool, criterion int) {
+	countOrders := problem.GetCountOrders()
+	permutation := make([]int, countOrders)
+	for i := 0; i < countOrders; i++ {
+		permutation[i] = i
+	}
+
+	return problem.RecursiveSolution(permutation, remainingPerformance, doCache)
+}
+
 func (problem *knapsackProblem) RecursiveSolution(permutation []int, remainingPerformance int, doCache bool) (solution []bool, criterion int) {
 	if doCache {
 		panic("not implemented")
