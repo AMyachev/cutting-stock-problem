@@ -18,15 +18,31 @@ func init() {
 func main() {
 	//cmd.Execute()
 
-	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
-
 	start := time.Now()
-	//solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
 
-	//fmt.Println(solution, criterion)
+	RecursiveSolution()
 
-	//criterion := task.TableSolutionByDefault(task.GetCompanyPerfomance())
+	end := time.Now()
+	fmt.Println("time: ", end.Sub(start))
+}
 
+// RecursiveSolution compute with default order
+func RecursiveSolution() {
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
+	solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
+	fmt.Println(solution, criterion)
+}
+
+// TableSolution compute with default order
+func TableSolution() {
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
+	criterion := task.TableSolutionByDefault(task.GetCompanyPerfomance())
+	fmt.Println(criterion)
+}
+
+// TableSolutionWithDifferentStrategy compute with modificated order (1% object)
+func TableSolutionWithDifferentStrategy() {
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
 	defaultPermutation := task.DefaultSort()
 	costPermutation := task.CostSort()
 
@@ -34,7 +50,4 @@ func main() {
 	costCriterion := task.TableSolution(costPermutation[:10], task.GetCompanyPerfomance())
 
 	fmt.Println("default: ", defaultCriterion, "cost: ", costCriterion)
-
-	end := time.Now()
-	fmt.Println("time: ", end.Sub(start))
 }
