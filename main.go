@@ -1,4 +1,5 @@
 package main
+
 import (
 	"os"
 
@@ -14,5 +15,4 @@ func init() {
 
 func main() {
 	cmd.Execute()
-	//cmd.ComputeDPProblem("example-tasks/delivery-problem/task_2_01_n3.txt", "optimistic", "default", "default-extra-step")
 }
