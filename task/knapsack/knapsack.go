@@ -247,3 +247,32 @@ func (problem *knapsackProblem) GetCountOrders() int {
 func (problem *knapsackProblem) GetCompanyPerfomance() int {
 	return problem.companyPerformance
 }
+
+// TODO lab3 interface + report
+/*
+// RecursiveSolution compute with default order
+func RecursiveSolution() {
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
+	solution, criterion := task.RecursiveSolutionDefaultOrder(task.GetCompanyPerfomance(), true)
+	fmt.Println(solution, criterion)
+}
+
+// TableSolution compute with default order
+func TableSolution() {
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
+	criterion := task.TableSolutionByDefault(task.GetCompanyPerfomance())
+	fmt.Println(criterion)
+}
+
+// TableSolutionWithDifferentStrategy compute with modificated order (1% object)
+func TableSolutionWithDifferentStrategy() {
+	task := knapsack.MakeMakeKnapsackProblemFromFile("example-tasks/knapsack/task_3_09_n1000.txt")
+	defaultPermutation := task.DefaultSort()
+	costPermutation := task.CostSort()
+
+	defaultCriterion := task.TableSolution(defaultPermutation[:10], task.GetCompanyPerfomance())
+	costCriterion := task.TableSolution(costPermutation[:10], task.GetCompanyPerfomance())
+
+	fmt.Println("default: ", defaultCriterion, "cost: ", costCriterion)
+}
+*/
