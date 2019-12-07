@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -335,17 +336,7 @@ func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingS
 	for i := 0; i < len(subTasks); i++ {
 		clusterOrder[i] = i
 	}
-
-	bestClusterOrder := make([]int, len(subTasks))
-
-	minCritValue := math.Inf(1)
-
-	for nextOrder(clusterOrder) {
-		if critValue := criterion(clusterOrder, betweenClustersLength); critValue < minCritValue {
-			minCritValue = critValue
-			copySlice(clusterOrder, bestClusterOrder)
-		}
-	}
+	bestClusterOrder := bruteForce(clusterOrder, betweenClustersLength)
 
 	// make result order
 	resultOrderSubTask := make([]*travelingSalesmanSubTask, len(subTasks))
@@ -354,6 +345,29 @@ func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingS
 	}
 
 	return resultOrderSubTask
+}
+
+// input order should be sort by increasing
+func bruteForce(objectsOrder []int, betweenObjectsLength [][]float64) []int {
+	bestObjectsOrder := make([]int, len(objectsOrder))
+	minCritValue := math.Inf(1)
+
+	for nextOrder(objectsOrder) {
+		if critValue := criterion(objectsOrder, betweenObjectsLength); critValue < minCritValue {
+			minCritValue = critValue
+			copySlice(objectsOrder, bestObjectsOrder)
+		}
+	}
+	return bestObjectsOrder
+}
+
+func (task *travelingSalesmanSubTask) ExhaustiveSearch() *travelingSalesmanSolution {
+	sort.Slice(task.towns, func(i int, j int) bool { return task.towns[i] < task.towns[j] })
+
+	bestTownsOrder := bruteForce(task.towns, task.betweenTownsLength)
+	return &travelingSalesmanSolution{
+		towns: bestTownsOrder,
+	}
 }
 
 func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask,
@@ -392,10 +406,6 @@ func (task *travelingSalesmanSubTask) CountTown() int {
 }
 
 func (task *travelingSalesmanSubTask) Greedy() *travelingSalesmanSolution {
-	panic("not implemented")
-}
-
-func (task *travelingSalesmanSubTask) ExhaustiveSearch() *travelingSalesmanSolution {
 	panic("not implemented")
 }
 
