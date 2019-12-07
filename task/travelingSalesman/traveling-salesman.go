@@ -67,7 +67,7 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 		}
 	}
 
-	betweenTownsLength := computeEuclideanDistance(townsCoord)
+	betweenTownsLength := computeAllEuclideanDistance(townsCoord)
 
 	return &travelingSalesmanTask{
 		countTown:          dimension,
@@ -76,7 +76,18 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 	}
 }
 
-func computeEuclideanDistance(townsCoord [][2]float64) [][]float64 {
+// point format: x,y
+func computeEuclideanDistance(firstPoint [2]float64, secondPoint [2]float64) float64 {
+	xSqr := math.Pow(firstPoint[0]-secondPoint[0], 2)
+	ySqr := math.Pow(firstPoint[1]-secondPoint[1], 2)
+	return math.Sqrt(xSqr + ySqr)
+}
+
+func computeWeightCenter(firstPoint [2]float64, secondPoint [2]float64) [2]float64 {
+	return [2]float64{math.Abs(firstPoint[0]-secondPoint[0]) / 2, math.Abs(firstPoint[1]-secondPoint[1]) / 2}
+}
+
+func computeAllEuclideanDistance(townsCoord [][2]float64) [][]float64 {
 	countTowns := len(townsCoord)
 
 	// allocation
@@ -88,9 +99,7 @@ func computeEuclideanDistance(townsCoord [][2]float64) [][]float64 {
 	// initialization
 	for i := 0; i < countTowns-1; i++ {
 		for j := i + 1; j < countTowns; j++ {
-			xSqr := math.Pow(townsCoord[i][0]-townsCoord[j][0], 2)
-			ySqr := math.Pow(townsCoord[i][1]-townsCoord[j][1], 2)
-			betweenTownsLength[i][j] = math.Sqrt(xSqr + ySqr)
+			betweenTownsLength[i][j] = computeEuclideanDistance(townsCoord[i], townsCoord[j])
 			// Euclidean distance is symmetric, so ...
 			betweenTownsLength[j][i] = betweenTownsLength[i][j]
 		}
@@ -124,6 +133,7 @@ func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, be
 type travelingSalesmanSubTask struct {
 	countTown          int
 	towns              []int
+	townsCoord         [][2]float64
 	betweenTownsLength [][]float64
 }
 
@@ -131,6 +141,7 @@ func MakeTravelingSalesmanSubTask(task *travelingSalesmanTask, towns []int) *tra
 	return &travelingSalesmanSubTask{
 		countTown:          task.countTown,
 		towns:              towns,
+		townsCoord:         task.townsCoord,
 		betweenTownsLength: task.betweenTownsLength,
 	}
 }
@@ -139,12 +150,17 @@ func MakeTravelingSalesmanSubTaskFromSubTask(task *travelingSalesmanSubTask, tow
 	return &travelingSalesmanSubTask{
 		countTown:          len(towns),
 		towns:              towns,
+		townsCoord:         task.townsCoord,
 		betweenTownsLength: task.betweenTownsLength,
 	}
 }
 
 func (task *travelingSalesmanSubTask) length(firstTown int, secondTown int) float64 {
 	return task.betweenTownsLength[task.towns[firstTown]][task.towns[secondTown]]
+}
+
+func (task *travelingSalesmanSubTask) coords(town int) [2]float64 {
+	return task.townsCoord[task.towns[town]]
 }
 
 func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubTask {
@@ -211,6 +227,11 @@ func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubT
 		towns[i] = []int{clusterCenter}
 	}
 
+	clustersCenterWeight := make([][2]float64, alpha)
+	for i := 0; i < alpha; i++ {
+		clustersCenterWeight[i] = task.coords(clustersCenters[i])
+	}
+
 	// fill with others
 	for town := 0; town < task.countTown; town++ {
 		// center?
@@ -220,13 +241,15 @@ func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubT
 
 		minLength := math.Inf(1)
 		clusterCenterIdx := 0
-		for i, centerTown := range clustersCenters {
-			if length := task.length(town, centerTown); length < minLength {
+		for i, clusterCenterWeight := range clustersCenterWeight {
+			if length := computeEuclideanDistance(task.coords(town), clusterCenterWeight); length < minLength {
 				minLength = length
 				clusterCenterIdx = i
 			}
 		}
 		towns[clusterCenterIdx] = append(towns[clusterCenterIdx], town)
+		// update weight of cluster center
+		clustersCenterWeight[clusterCenterIdx] = computeWeightCenter(clustersCenterWeight[clusterCenterIdx], task.coords(town))
 	}
 
 	result := make([]*travelingSalesmanSubTask, alpha)
