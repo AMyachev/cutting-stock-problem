@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"csp/cmd"
+	"csp/task/travelingSalesman"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,5 +14,8 @@ func init() {
 }
 
 func main() {
-	cmd.Execute()
+	//cmd.Execute()
+
+	task := travelingSalesman.MakeTravelingSalesmanTaskTest("example-tasks/travelingSalesman/DJ38.txt")
+	print(task)
 }
