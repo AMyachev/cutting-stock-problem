@@ -16,6 +16,6 @@ func init() {
 func main() {
 	//cmd.Execute()
 
-	task := travelingSalesman.MakeTravelingSalesmanTaskTest("example-tasks/travelingSalesman/DJ38.txt")
-	print(task)
+	task := travelingSalesman.MakeTravelingSalesmanTask("example-tasks/travelingSalesman/DJ38.txt")
+	task.Compute("standard", 10, 2)
 }

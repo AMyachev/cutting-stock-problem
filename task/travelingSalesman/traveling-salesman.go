@@ -24,7 +24,7 @@ type travelingSalesmanSolution struct {
 	towns []int
 }
 
-func MakeTravelingSalesmanTaskTest(taskFile string) *travelingSalesmanTask {
+func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 	content, err := ioutil.ReadFile(taskFile)
 	if err != nil {
 		log.Fatal(err)
@@ -99,45 +99,161 @@ func computeEuclideanDistance(townsCoord [][2]float64) [][]float64 {
 	return betweenTownsLength
 }
 
-func (task *travelingSalesmanTask) reducto(alpha int) []*travelingSalesmanTask {
-	panic("not implemented")
+func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, betta int) (solution *travelingSalesmanSolution) {
+
+	// towns can be a subset of {1,2, ..., n}
+	subTaskCountTown := task.countTown
+	towns := make([]int, subTaskCountTown)
+	for i := 0; i < subTaskCountTown; i++ {
+		towns[i] = i
+	}
+
+	subTask := MakeTravelingSalesmanSubTask(task, towns)
+
+	var reductoAlgo func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask
+
+	switch reductoAlgoName {
+	case "standard":
+		reductoAlgo = reducto
+	default:
+		panic("not implemeted")
+	}
+	return subTask.Compute(reductoAlgo, alpha, betta)
 }
 
-func (task *travelingSalesmanTask) computeExternalTask(subTasks []*travelingSalesmanTask) []*travelingSalesmanTask {
-	panic("not implemented")
+type travelingSalesmanSubTask struct {
+	countTown          int
+	towns              []int
+	betweenTownsLength [][]float64
 }
 
-func (task *travelingSalesmanTask) CountTown() int {
-	return task.countTown
+func MakeTravelingSalesmanSubTask(task *travelingSalesmanTask, towns []int) *travelingSalesmanSubTask {
+	return &travelingSalesmanSubTask{
+		countTown:          task.countTown,
+		towns:              towns,
+		betweenTownsLength: task.betweenTownsLength,
+	}
 }
 
-func (task *travelingSalesmanTask) Greedy() *travelingSalesmanSolution {
-	panic("not implemented")
+func MakeTravelingSalesmanSubTaskFromSubTask(task *travelingSalesmanSubTask, towns []int) *travelingSalesmanSubTask {
+	return &travelingSalesmanSubTask{
+		countTown:          len(towns),
+		towns:              towns,
+		betweenTownsLength: task.betweenTownsLength,
+	}
 }
 
-func (task *travelingSalesmanTask) ExhaustiveSearch() *travelingSalesmanSolution {
-	panic("not implemented")
+func (task *travelingSalesmanSubTask) length(firstTown int, secondTown int) float64 {
+	return task.betweenTownsLength[task.towns[firstTown]][task.towns[secondTown]]
 }
 
-func (task *travelingSalesmanTask) CombineSolutions(solutions []*travelingSalesmanSolution) *travelingSalesmanSolution {
-	panic("not implemented")
+func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubTask {
+	if alpha <= 0 {
+		log.WithField("alpha", alpha).Fatal("alpha <= 0")
+	}
+
+	if alpha == 1 {
+		return []*travelingSalesmanSubTask{task}
+	}
+
+	clustersCenters := []int{-1, -1}
+
+	// find first 2 centers
+	maxLength := 0.
+	for i := 0; i < task.countTown; i++ {
+		for j := i + 1; j < task.countTown; j++ {
+			if length := task.length(i, j); length > maxLength {
+				maxLength = length
+				clustersCenters[0] = i
+				clustersCenters[1] = j
+			}
+		}
+	}
+
+	// helper function
+	find := func(clustersCenters []int, town int) bool {
+		for _, centerTown := range clustersCenters {
+			if town == centerTown {
+				return true
+			}
+		}
+		return false
+	}
+
+	// find other centers
+	for clusterNumber := 2; clusterNumber < alpha; clusterNumber++ {
+		maxSumLength := 0.
+		nearestTown := 0
+		for town := 0; town < task.countTown; town++ {
+			// center?
+			if find(clustersCenters, town) {
+				continue
+			}
+
+			sumLength := 0.
+			for _, centerTown := range clustersCenters {
+				sumLength += task.length(town, centerTown)
+			}
+
+			if sumLength > maxSumLength {
+				maxSumLength = sumLength
+				nearestTown = town
+			}
+		}
+		clustersCenters = append(clustersCenters, nearestTown)
+	}
+
+	// fill clusters with other towns
+
+	// fill with cluster's centers
+	towns := make([][]int, alpha)
+	for i, clusterCenter := range clustersCenters {
+		towns[i] = []int{clusterCenter}
+	}
+
+	// fill with others
+	for town := 0; town < task.countTown; town++ {
+		// center?
+		if find(clustersCenters, town) {
+			continue
+		}
+
+		minLength := math.Inf(1)
+		clusterCenterIdx := 0
+		for i, centerTown := range clustersCenters {
+			if length := task.length(town, centerTown); length < minLength {
+				minLength = length
+				clusterCenterIdx = i
+			}
+		}
+		towns[clusterCenterIdx] = append(towns[clusterCenterIdx], town)
+	}
+
+	result := make([]*travelingSalesmanSubTask, alpha)
+	for i := 0; i < alpha; i++ {
+		result[i] = MakeTravelingSalesmanSubTaskFromSubTask(task, towns[i])
+	}
+
+	return result
 }
 
-func (task *travelingSalesmanTask) Compute(alpha int, betta int) (solution *travelingSalesmanSolution) {
+func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask,
+	alpha int, betta int) (solution *travelingSalesmanSolution) {
+
 	solutions := []*travelingSalesmanSolution{}
 
 	if alpha > alphaMax {
 		panic(fmt.Sprintf("compute: alpha [%d] > max alpha [%d]", alpha, alphaMax))
 	}
 
-	subTasks := task.reducto(alpha)
+	subTasks := reducto(task, alpha)
 	betta--
 
 	orderedSubTasks := task.computeExternalTask(subTasks)
 
 	for _, subTask := range orderedSubTasks {
 		if betta != 0 {
-			solutions = append(solutions, subTask.Compute(alpha, betta))
+			solutions = append(solutions, subTask.Compute(reducto, alpha, betta))
 		} else {
 			if subTask.CountTown() > alphaMax {
 				solutions = append(solutions, subTask.Greedy())
@@ -150,4 +266,24 @@ func (task *travelingSalesmanTask) Compute(alpha int, betta int) (solution *trav
 	solution = task.CombineSolutions(solutions)
 
 	return solution
+}
+
+func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingSalesmanSubTask) []*travelingSalesmanSubTask {
+	panic("not implemented")
+}
+
+func (task *travelingSalesmanSubTask) CountTown() int {
+	return task.countTown
+}
+
+func (task *travelingSalesmanSubTask) Greedy() *travelingSalesmanSolution {
+	panic("not implemented")
+}
+
+func (task *travelingSalesmanSubTask) ExhaustiveSearch() *travelingSalesmanSolution {
+	panic("not implemented")
+}
+
+func (task *travelingSalesmanSubTask) CombineSolutions(solutions []*travelingSalesmanSolution) *travelingSalesmanSolution {
+	panic("not implemented")
 }
