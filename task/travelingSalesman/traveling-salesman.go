@@ -87,6 +87,14 @@ func computeWeightCenter(firstPoint [2]float64, secondPoint [2]float64) [2]float
 	return [2]float64{math.Abs(firstPoint[0]-secondPoint[0]) / 2, math.Abs(firstPoint[1]-secondPoint[1]) / 2}
 }
 
+func computeClusterWeightCenter(task *travelingSalesmanSubTask) [2]float64 {
+	weightCenter := task.coords(0)
+	for i := 1; i < task.countTown; i++ {
+		weightCenter = computeWeightCenter(weightCenter, task.coords(i))
+	}
+	return weightCenter
+}
+
 func computeAllEuclideanDistance(townsCoord [][2]float64) [][]float64 {
 	countTowns := len(townsCoord)
 
@@ -260,6 +268,94 @@ func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubT
 	return result
 }
 
+func swap(objectsOrder []int, i int, j int) {
+	temp := objectsOrder[i]
+	objectsOrder[i] = objectsOrder[j]
+	objectsOrder[j] = temp
+}
+
+func nextOrder(objectsOrder []int) bool {
+	countObjects := len(objectsOrder)
+	// choose penult object id
+	objectIdx := countObjects - 2
+	for objectIdx != -1 && objectsOrder[objectIdx] >= objectsOrder[objectIdx+1] {
+		objectIdx--
+	}
+	// next order not found
+	if objectIdx == -1 {
+		return false
+	}
+
+	// choose last object id
+	objectIdxLast := countObjects - 1
+	for objectsOrder[objectIdx] >= objectsOrder[objectIdxLast] {
+		objectIdxLast--
+	}
+
+	swap(objectsOrder, objectIdx, objectIdxLast)
+
+	// sort objects after objectIdx
+	left := objectIdx + 1
+	right := countObjects - 1
+	for left < right {
+		swap(objectsOrder, left, right)
+		left++
+		right--
+	}
+	return true
+}
+
+func copySlice(source []int, destination []int) {
+	if len(source) != len(destination) {
+		log.Fatalf("length should be the same: [%d], [%d]", len(source), len(destination))
+	}
+
+	for i := 0; i < len(source); i++ {
+		destination[i] = source[i]
+	}
+}
+
+func criterion(clusterOrder []int, betweenClustersLength [][]float64) float64 {
+	critValue := 0.
+	for i := 0; i < len(clusterOrder)-1; i++ {
+		critValue += betweenClustersLength[clusterOrder[i]][clusterOrder[i+1]]
+	}
+	return critValue
+}
+
+func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingSalesmanSubTask) []*travelingSalesmanSubTask {
+	weightCenters := make([][2]float64, len(subTasks))
+	for i, task := range subTasks {
+		weightCenters[i] = computeClusterWeightCenter(task)
+	}
+
+	betweenClustersLength := computeAllEuclideanDistance(weightCenters)
+
+	clusterOrder := make([]int, len(subTasks))
+	for i := 0; i < len(subTasks); i++ {
+		clusterOrder[i] = i
+	}
+
+	bestClusterOrder := make([]int, len(subTasks))
+
+	minCritValue := math.Inf(1)
+
+	for nextOrder(clusterOrder) {
+		if critValue := criterion(clusterOrder, betweenClustersLength); critValue < minCritValue {
+			minCritValue = critValue
+			copySlice(clusterOrder, bestClusterOrder)
+		}
+	}
+
+	// make result order
+	resultOrderSubTask := make([]*travelingSalesmanSubTask, len(subTasks))
+	for i := 0; i < len(subTasks); i++ {
+		resultOrderSubTask[i] = subTasks[bestClusterOrder[i]]
+	}
+
+	return resultOrderSubTask
+}
+
 func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask,
 	alpha int, betta int) (solution *travelingSalesmanSolution) {
 
@@ -289,10 +385,6 @@ func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSub
 	solution = task.CombineSolutions(solutions)
 
 	return solution
-}
-
-func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingSalesmanSubTask) []*travelingSalesmanSubTask {
-	panic("not implemented")
 }
 
 func (task *travelingSalesmanSubTask) CountTown() int {
