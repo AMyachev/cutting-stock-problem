@@ -321,6 +321,7 @@ func criterion(clusterOrder []int, betweenClustersLength [][]float64) float64 {
 	for i := 0; i < len(clusterOrder)-1; i++ {
 		critValue += betweenClustersLength[clusterOrder[i]][clusterOrder[i+1]]
 	}
+	critValue += betweenClustersLength[clusterOrder[len(clusterOrder)-1]][clusterOrder[0]]
 	return critValue
 }
 
@@ -394,6 +395,10 @@ func (task *travelingSalesmanSubTask) Greedy() *travelingSalesmanSolution {
 	}
 }
 
+func (task *travelingSalesmanSubTask) CombineSolutions(solutions []*travelingSalesmanSolution) *travelingSalesmanSolution {
+	panic("not implemented")
+}
+
 func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask,
 	alpha int, betta int) (solution *travelingSalesmanSolution) {
 
@@ -427,8 +432,4 @@ func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSub
 
 func (task *travelingSalesmanSubTask) CountTown() int {
 	return task.countTown
-}
-
-func (task *travelingSalesmanSubTask) CombineSolutions(solutions []*travelingSalesmanSolution) *travelingSalesmanSolution {
-	panic("not implemented")
 }
