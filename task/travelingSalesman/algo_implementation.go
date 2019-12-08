@@ -6,6 +6,31 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// input order should be sorted by increasing
+// note: objectsOrder will be modificated
+func bruteForce(objectsOrder []int, betweenObjectsLength [][]float64) []int {
+	bestObjectsOrder := make([]int, len(objectsOrder))
+	minCritValue := math.Inf(1)
+
+	for nextOrder(objectsOrder) {
+		if critValue := criterion(objectsOrder, betweenObjectsLength); critValue < minCritValue {
+			minCritValue = critValue
+			copySlice(objectsOrder, bestObjectsOrder)
+		}
+	}
+	return bestObjectsOrder
+}
+
+// compute cycle length
+func criterion(objectOrder []int, betweenObjectsLength [][]float64) float64 {
+	critValue := 0.
+	for i := 0; i < len(objectOrder)-1; i++ {
+		critValue += betweenObjectsLength[objectOrder[i]][objectOrder[i+1]]
+	}
+	critValue += betweenObjectsLength[objectOrder[len(objectOrder)-1]][objectOrder[0]]
+	return critValue
+}
+
 func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubTask {
 	if alpha <= 0 {
 		log.WithField("alpha", alpha).Fatal("alpha <= 0")

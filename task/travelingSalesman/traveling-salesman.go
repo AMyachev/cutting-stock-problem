@@ -135,15 +135,6 @@ func (task *travelingSalesmanSubTask) computeClusterWeightCenter() [2]float64 {
 	return weightCenter
 }
 
-func criterion(clusterOrder []int, betweenClustersLength [][]float64) float64 {
-	critValue := 0.
-	for i := 0; i < len(clusterOrder)-1; i++ {
-		critValue += betweenClustersLength[clusterOrder[i]][clusterOrder[i+1]]
-	}
-	critValue += betweenClustersLength[clusterOrder[len(clusterOrder)-1]][clusterOrder[0]]
-	return critValue
-}
-
 func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingSalesmanSubTask) []*travelingSalesmanSubTask {
 	weightCenters := make([][2]float64, len(subTasks))
 	for i, task := range subTasks {
@@ -165,20 +156,6 @@ func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingS
 	}
 
 	return resultOrderSubTask
-}
-
-// input order should be sort by increasing
-func bruteForce(objectsOrder []int, betweenObjectsLength [][]float64) []int {
-	bestObjectsOrder := make([]int, len(objectsOrder))
-	minCritValue := math.Inf(1)
-
-	for nextOrder(objectsOrder) {
-		if critValue := criterion(objectsOrder, betweenObjectsLength); critValue < minCritValue {
-			minCritValue = critValue
-			copySlice(objectsOrder, bestObjectsOrder)
-		}
-	}
-	return bestObjectsOrder
 }
 
 func (task *travelingSalesmanSubTask) ExhaustiveSearch() *travelingSalesmanSolution {
