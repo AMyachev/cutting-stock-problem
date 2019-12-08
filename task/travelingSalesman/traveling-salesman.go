@@ -15,6 +15,15 @@ const (
 	alphaMax = 10
 )
 
+var BestMinLength map[string]float64 = map[string]float64{
+	"DJ38":   6656.,
+	"EI8246": 206171,
+	"UY734":  79114.,
+	"XQF131": 564.,
+	"XQG237": 1019.,
+	"XQL662": 2513.,
+}
+
 type travelingSalesmanSolution struct {
 	towns []int
 }
