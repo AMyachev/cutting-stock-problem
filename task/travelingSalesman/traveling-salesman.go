@@ -15,18 +15,14 @@ const (
 	alphaMax = 10
 )
 
+type travelingSalesmanSolution struct {
+	towns []int
+}
+
 type travelingSalesmanTask struct {
 	countTown          int
 	townsCoord         [][2]float64
 	betweenTownsLength [][]float64
-}
-
-func (task *travelingSalesmanTask) Criterion(solution *travelingSalesmanSolution) float64 {
-	return criterion(solution.towns, task.betweenTownsLength)
-}
-
-type travelingSalesmanSolution struct {
-	towns []int
 }
 
 func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
@@ -81,12 +77,8 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 	}
 }
 
-func (task *travelingSalesmanSubTask) computeClusterWeightCenter() [2]float64 {
-	weightCenter := task.coords(0)
-	for i := 1; i < task.countTown; i++ {
-		weightCenter = computeWeightCenter(weightCenter, task.coords(i))
-	}
-	return weightCenter
+func (task *travelingSalesmanTask) Criterion(solution *travelingSalesmanSolution) float64 {
+	return criterion(solution.towns, task.betweenTownsLength)
 }
 
 func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, betta int) (solution *travelingSalesmanSolution) {
@@ -98,7 +90,7 @@ func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, be
 		towns[i] = i
 	}
 
-	subTask := MakeTravelingSalesmanSubTask(task, towns)
+	subTask := MakeTravelingSalesmanSubTask(towns, task.townsCoord, task.betweenTownsLength)
 
 	var reductoAlgo func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask
 
@@ -118,21 +110,20 @@ type travelingSalesmanSubTask struct {
 	betweenTownsLength [][]float64
 }
 
-func MakeTravelingSalesmanSubTask(task *travelingSalesmanTask, towns []int) *travelingSalesmanSubTask {
-	return &travelingSalesmanSubTask{
-		countTown:          task.countTown,
-		towns:              towns,
-		townsCoord:         task.townsCoord,
-		betweenTownsLength: task.betweenTownsLength,
+func (task *travelingSalesmanSubTask) computeClusterWeightCenter() [2]float64 {
+	weightCenter := task.coords(0)
+	for i := 1; i < task.countTown; i++ {
+		weightCenter = computeWeightCenter(weightCenter, task.coords(i))
 	}
+	return weightCenter
 }
 
-func MakeTravelingSalesmanSubTaskFromSubTask(task *travelingSalesmanSubTask, towns []int) *travelingSalesmanSubTask {
+func MakeTravelingSalesmanSubTask(towns []int, townsCoord [][2]float64, betweenTownsLength [][]float64) *travelingSalesmanSubTask {
 	return &travelingSalesmanSubTask{
 		countTown:          len(towns),
 		towns:              towns,
-		townsCoord:         task.townsCoord,
-		betweenTownsLength: task.betweenTownsLength,
+		townsCoord:         townsCoord,
+		betweenTownsLength: betweenTownsLength,
 	}
 }
 
@@ -241,7 +232,7 @@ func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubT
 		for j := 0; j < len(townsNumbers); j++ {
 			townsNumbers[j] = task.towns[towns[i][j]]
 		}
-		result[i] = MakeTravelingSalesmanSubTaskFromSubTask(task, townsNumbers)
+		result[i] = MakeTravelingSalesmanSubTask(townsNumbers, task.townsCoord, task.betweenTownsLength)
 	}
 
 	return result
