@@ -81,7 +81,7 @@ func (task *travelingSalesmanTask) Criterion(solution *travelingSalesmanSolution
 	return criterion(solution.towns, task.betweenTownsLength)
 }
 
-func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, betta int) (solution *travelingSalesmanSolution) {
+func (task *travelingSalesmanTask) Compute(reductoAlgoName, greedyAlgoName string, alpha, betta int) (solution *travelingSalesmanSolution) {
 
 	// towns can be a subset of {1,2, ..., n}
 	subTaskCountTown := task.countTown
@@ -93,6 +93,7 @@ func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, be
 	subTask := MakeTravelingSalesmanSubTask(towns, task.townsCoord, task.betweenTownsLength)
 
 	var reductoAlgo func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask
+	var greedyAlgo func(*travelingSalesmanSubTask) *travelingSalesmanSolution
 
 	switch reductoAlgoName {
 	case "standard":
@@ -100,7 +101,15 @@ func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, be
 	default:
 		panic("not implemeted")
 	}
-	return subTask.Compute(reductoAlgo, alpha, betta)
+
+	switch greedyAlgoName {
+	case "standard":
+		greedyAlgo = standardGreedy
+	default:
+		panic("not implemented")
+	}
+
+	return subTask.Compute(reductoAlgo, greedyAlgo, alpha, betta)
 }
 
 type travelingSalesmanSubTask struct {
@@ -158,36 +167,12 @@ func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingS
 	return resultOrderSubTask
 }
 
-func (task *travelingSalesmanSubTask) ExhaustiveSearch() *travelingSalesmanSolution {
+func (task *travelingSalesmanSubTask) bruteForce() *travelingSalesmanSolution {
 	sort.Slice(task.towns, func(i int, j int) bool { return task.towns[i] < task.towns[j] })
 
 	bestTownsOrder := bruteForce(task.towns, task.betweenTownsLength)
 	return &travelingSalesmanSolution{
 		towns: bestTownsOrder,
-	}
-}
-
-func (task *travelingSalesmanSubTask) Greedy() *travelingSalesmanSolution {
-	resultOrder := []int{task.towns[0]}
-	remainingTowns := make([]int, len(task.towns)-1)
-	copySlice(task.towns[1:], remainingTowns)
-
-	for i := 0; i < task.countTown-1; i++ {
-		lastTown := resultOrder[len(resultOrder)-1]
-		minLength := math.Inf(1)
-		townPos := 0
-		for pos, remainingTown := range remainingTowns {
-			if length := task.betweenTownsLength[lastTown][remainingTown]; length < minLength {
-				minLength = length
-				townPos = pos
-			}
-		}
-		resultOrder = append(resultOrder, remainingTowns[townPos])
-		remainingTowns = append(remainingTowns[:townPos], remainingTowns[townPos+1:]...)
-	}
-
-	return &travelingSalesmanSolution{
-		towns: resultOrder,
 	}
 }
 
@@ -235,6 +220,7 @@ func (task *travelingSalesmanSubTask) CombineSolutions(solutions []*travelingSal
 }
 
 func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask,
+	greedy func(*travelingSalesmanSubTask) *travelingSalesmanSolution,
 	alpha int, betta int) (solution *travelingSalesmanSolution) {
 
 	solutions := []*travelingSalesmanSolution{}
@@ -250,12 +236,12 @@ func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSub
 
 	for _, subTask := range orderedSubTasks {
 		if betta != 0 {
-			solutions = append(solutions, subTask.Compute(reducto, alpha, betta))
+			solutions = append(solutions, subTask.Compute(reducto, greedy, alpha, betta))
 		} else {
 			if subTask.CountTown() > alphaMax {
-				solutions = append(solutions, subTask.Greedy())
+				solutions = append(solutions, greedy(subTask))
 			} else {
-				solutions = append(solutions, subTask.ExhaustiveSearch())
+				solutions = append(solutions, subTask.bruteForce())
 			}
 		}
 	}

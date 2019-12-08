@@ -133,3 +133,27 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 
 	return result
 }
+
+func standardGreedy(task *travelingSalesmanSubTask) *travelingSalesmanSolution {
+	resultOrder := []int{task.towns[0]}
+	remainingTowns := make([]int, len(task.towns)-1)
+	copySlice(task.towns[1:], remainingTowns)
+
+	for i := 0; i < task.countTown-1; i++ {
+		lastTown := resultOrder[len(resultOrder)-1]
+		minLength := math.Inf(1)
+		townPos := 0
+		for pos, remainingTown := range remainingTowns {
+			if length := task.betweenTownsLength[lastTown][remainingTown]; length < minLength {
+				minLength = length
+				townPos = pos
+			}
+		}
+		resultOrder = append(resultOrder, remainingTowns[townPos])
+		remainingTowns = append(remainingTowns[:townPos], remainingTowns[townPos+1:]...)
+	}
+
+	return &travelingSalesmanSolution{
+		towns: resultOrder,
+	}
+}
