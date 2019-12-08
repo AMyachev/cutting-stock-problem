@@ -81,13 +81,6 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 	}
 }
 
-// point format: x,y
-func computeEuclideanDistance(firstPoint [2]float64, secondPoint [2]float64) float64 {
-	xSqr := math.Pow(firstPoint[0]-secondPoint[0], 2)
-	ySqr := math.Pow(firstPoint[1]-secondPoint[1], 2)
-	return math.Sqrt(xSqr + ySqr)
-}
-
 func computeWeightCenter(firstPoint [2]float64, secondPoint [2]float64) [2]float64 {
 	return [2]float64{math.Abs(firstPoint[0]-secondPoint[0]) / 2, math.Abs(firstPoint[1]-secondPoint[1]) / 2}
 }
