@@ -36,7 +36,7 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 		log.WithField("alpha", alpha).Fatal("alpha <= 0")
 	}
 
-	if alpha == 1 || task.CountTown() <= alphaMax {
+	if alpha == 1 || task.countTown <= alphaMax {
 		return []*travelingSalesmanSubTask{task}
 	}
 
@@ -55,9 +55,9 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 	}
 
 	// helper function
-	find := func(clustersCenters []int, town int) bool {
-		for _, centerTown := range clustersCenters {
-			if town == centerTown {
+	find := func(clustersCenters []int, townIdx int) bool {
+		for _, centerTownIdx := range clustersCenters {
+			if townIdx == centerTownIdx {
 				return true
 			}
 		}
@@ -67,32 +67,32 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 	// find other centers
 	for clusterNumber := 2; clusterNumber < alpha; clusterNumber++ {
 		maxSumLength := 0.
-		nearestTown := 0
-		for town := 0; town < task.countTown; town++ {
+		nearestTownIdx := 0
+		for townIdx := 0; townIdx < task.countTown; townIdx++ {
 			// center?
-			if find(clustersCenters, town) {
+			if find(clustersCenters, townIdx) {
 				continue
 			}
 
 			sumLength := 0.
-			for _, centerTown := range clustersCenters {
-				sumLength += task.length(town, centerTown)
+			for _, centerTownIdx := range clustersCenters {
+				sumLength += task.length(townIdx, centerTownIdx)
 			}
 
 			if sumLength > maxSumLength {
 				maxSumLength = sumLength
-				nearestTown = town
+				nearestTownIdx = townIdx
 			}
 		}
-		clustersCenters = append(clustersCenters, nearestTown)
+		clustersCenters = append(clustersCenters, nearestTownIdx)
 	}
 
 	// fill clusters with other towns
 
 	// fill with cluster's centers
-	towns := make([][]int, alpha)
+	townsIdx := make([][]int, alpha)
 	for i, clusterCenter := range clustersCenters {
-		towns[i] = []int{clusterCenter}
+		townsIdx[i] = []int{clusterCenter}
 	}
 
 	clustersCenterWeight := make([][2]float64, alpha)
@@ -101,34 +101,33 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 	}
 
 	// fill with others
-	for town := 0; town < task.countTown; town++ {
+	for townIdx := 0; townIdx < task.countTown; townIdx++ {
 		// center?
-		if find(clustersCenters, town) {
+		if find(clustersCenters, townIdx) {
 			continue
 		}
 
 		minLength := math.Inf(1)
 		clusterCenterIdx := 0
 		for i, clusterCenterWeight := range clustersCenterWeight {
-			if length := computeEuclideanDistance(task.coords(town), clusterCenterWeight); length < minLength {
+			if length := computeEuclideanDistance(task.coords(townIdx), clusterCenterWeight); length < minLength {
 				minLength = length
 				clusterCenterIdx = i
 			}
 		}
-		towns[clusterCenterIdx] = append(towns[clusterCenterIdx], town)
+		townsIdx[clusterCenterIdx] = append(townsIdx[clusterCenterIdx], townIdx)
 		// update weight of cluster center
-		clustersCenterWeight[clusterCenterIdx] = computeWeightCenter(clustersCenterWeight[clusterCenterIdx], task.coords(town))
+		clustersCenterWeight[clusterCenterIdx] = computeWeightCenter(clustersCenterWeight[clusterCenterIdx], task.coords(townIdx))
 	}
 
-	// fast fix
-
+	// conversion of the city index to its number
 	result := make([]*travelingSalesmanSubTask, alpha)
 	for i := 0; i < alpha; i++ {
-		townsNumbers := make([]int, len(towns[i]))
-		for j := 0; j < len(townsNumbers); j++ {
-			townsNumbers[j] = task.towns[towns[i][j]]
+		towns := make([]int, len(townsIdx[i]))
+		for j := 0; j < len(towns); j++ {
+			towns[j] = task.towns[townsIdx[i][j]]
 		}
-		result[i] = MakeTravelingSalesmanSubTask(townsNumbers, task.townsCoord, task.betweenTownsLength)
+		result[i] = MakeTravelingSalesmanSubTask(towns, task.townsCoord, task.betweenTownsLength)
 	}
 
 	return result

@@ -83,7 +83,7 @@ func (task *travelingSalesmanTask) Criterion(solution *travelingSalesmanSolution
 
 func (task *travelingSalesmanTask) Compute(reductoAlgoName, greedyAlgoName string, alpha, betta int) (solution *travelingSalesmanSolution) {
 
-	// towns can be a subset of {1,2, ..., n}
+	// towns can be a subset of {0,1, ..., n-1}
 	subTaskCountTown := task.countTown
 	towns := make([]int, subTaskCountTown)
 	for i := 0; i < subTaskCountTown; i++ {
@@ -238,7 +238,7 @@ func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSub
 		if betta != 0 {
 			solutions = append(solutions, subTask.Compute(reducto, greedy, alpha, betta))
 		} else {
-			if subTask.CountTown() > alphaMax {
+			if subTask.countTown > alphaMax {
 				solutions = append(solutions, greedy(subTask))
 			} else {
 				solutions = append(solutions, subTask.bruteForce())
@@ -249,8 +249,4 @@ func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSub
 	solution = task.CombineSolutions(solutions)
 
 	return solution
-}
-
-func (task *travelingSalesmanSubTask) CountTown() int {
-	return task.countTown
 }
