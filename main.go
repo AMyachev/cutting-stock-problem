@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"csp/task/travelingSalesman"
@@ -17,5 +18,6 @@ func main() {
 	//cmd.Execute()
 
 	task := travelingSalesman.MakeTravelingSalesmanTask("example-tasks/travelingSalesman/DJ38.txt")
-	task.Compute("standard", 10, 2)
+	solution := task.Compute("standard", 10, 3)
+	fmt.Println(task.Criterion(solution))
 }

@@ -21,6 +21,10 @@ type travelingSalesmanTask struct {
 	betweenTownsLength [][]float64
 }
 
+func (task *travelingSalesmanTask) Criterion(solution *travelingSalesmanSolution) float64 {
+	return criterion(solution.towns, task.betweenTownsLength)
+}
+
 type travelingSalesmanSolution struct {
 	towns []int
 }
@@ -177,7 +181,7 @@ func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubT
 		log.WithField("alpha", alpha).Fatal("alpha <= 0")
 	}
 
-	if alpha == 1 {
+	if alpha == 1 || task.CountTown() <= alphaMax {
 		return []*travelingSalesmanSubTask{task}
 	}
 
@@ -261,9 +265,15 @@ func reducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubT
 		clustersCenterWeight[clusterCenterIdx] = computeWeightCenter(clustersCenterWeight[clusterCenterIdx], task.coords(town))
 	}
 
+	// fast fix
+
 	result := make([]*travelingSalesmanSubTask, alpha)
 	for i := 0; i < alpha; i++ {
-		result[i] = MakeTravelingSalesmanSubTaskFromSubTask(task, towns[i])
+		townsNumbers := make([]int, len(towns[i]))
+		for j := 0; j < len(townsNumbers); j++ {
+			townsNumbers[j] = task.towns[towns[i][j]]
+		}
+		result[i] = MakeTravelingSalesmanSubTaskFromSubTask(task, townsNumbers)
 	}
 
 	return result
@@ -381,7 +391,7 @@ func (task *travelingSalesmanSubTask) Greedy() *travelingSalesmanSolution {
 		minLength := math.Inf(1)
 		townPos := 0
 		for pos, remainingTown := range remainingTowns {
-			if length := task.length(lastTown, remainingTown); length < minLength {
+			if length := task.betweenTownsLength[lastTown][remainingTown]; length < minLength {
 				minLength = length
 				townPos = pos
 			}
@@ -396,7 +406,46 @@ func (task *travelingSalesmanSubTask) Greedy() *travelingSalesmanSolution {
 }
 
 func (task *travelingSalesmanSubTask) CombineSolutions(solutions []*travelingSalesmanSolution) *travelingSalesmanSolution {
-	panic("not implemented")
+	resultTowns := []int{}
+	resultTowns = append(resultTowns, solutions[0].towns...)
+
+	for i := 0; i < len(solutions)-1; i++ {
+		minLength := math.Inf(1)
+		bestJ := 0
+		bestK := 0
+		for j, town := range resultTowns {
+			for k, nextTown := range solutions[i+1].towns {
+				if length := task.betweenTownsLength[town][nextTown]; length < minLength {
+					minLength = length
+					bestJ = j
+					bestK = k
+				}
+			}
+		}
+		mergeTowns := make([]int, len(resultTowns)+len(solutions[i+1].towns))
+		pos := 0
+		for j := 0; j <= bestJ; j++ {
+			mergeTowns[pos] = resultTowns[j]
+			pos++
+		}
+		for k := bestK; k < len(solutions[i+1].towns); k++ {
+			mergeTowns[pos] = solutions[i+1].towns[k]
+			pos++
+		}
+		for k := 0; k < bestK; k++ {
+			mergeTowns[pos] = solutions[i+1].towns[k]
+			pos++
+		}
+		for j := bestJ + 1; j < len(resultTowns); j++ {
+			mergeTowns[pos] = resultTowns[j]
+			pos++
+		}
+		resultTowns = mergeTowns
+	}
+
+	return &travelingSalesmanSolution{
+		towns: resultTowns,
+	}
 }
 
 func (task *travelingSalesmanSubTask) Compute(reducto func(*travelingSalesmanSubTask, int) []*travelingSalesmanSubTask,
