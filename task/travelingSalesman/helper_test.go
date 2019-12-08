@@ -15,6 +15,19 @@ func isEqualFloat64(first, second float64) bool {
 	return math.Abs(first-second) < lambda
 }
 
+func isEqualIntSlices(first, second []int) bool {
+	if len(first) != len(second) {
+		return false
+	}
+
+	for i := 0; i < len(first); i++ {
+		if first[i] != second[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func isEqualFloat64Matrixes(firstMatrix [][]float64, secondMatrix [][]float64) bool {
 	if len(firstMatrix) != len(secondMatrix) {
 		return false
@@ -72,5 +85,24 @@ func TestComputeAllEuclideanDistance(t *testing.T) {
 	}
 	if distances := computeAllEuclideanDistance(points); !isEqualFloat64Matrixes(distances, expectedDistances) {
 		t.Error(formatErrorReport("computeAllEuclideanDistance", distances, expectedDistances))
+	}
+}
+
+func TestNextOrder(t *testing.T) {
+	currentOrder := []int{1, 2, 3}
+
+	expectedOrders := [][]int{
+		[]int{1, 3, 2},
+		[]int{2, 1, 3},
+		[]int{2, 3, 1},
+		[]int{3, 1, 2},
+		[]int{3, 2, 1},
+	}
+
+	for i := 0; i < len(expectedOrders); i++ {
+		nextOrder(currentOrder)
+		if !isEqualIntSlices(currentOrder, expectedOrders[i]) {
+			t.Error(formatErrorReport("nextOder", currentOrder, expectedOrders[i]))
+		}
 	}
 }
