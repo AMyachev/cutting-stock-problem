@@ -56,7 +56,7 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 			// init line with town's coords was found
 			// lines format: "[town number; start with 1] [town's X coord] [town's Y coord]"
 			for j, coordsLine := range contentLines[i+1:] {
-				if strings.HasPrefix(coordsLine, "END") {
+				if strings.HasPrefix(coordsLine, "EOF") {
 					break
 				}
 
