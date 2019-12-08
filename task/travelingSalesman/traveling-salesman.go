@@ -81,33 +81,12 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 	}
 }
 
-func computeClusterWeightCenter(task *travelingSalesmanSubTask) [2]float64 {
+func (task *travelingSalesmanSubTask) computeClusterWeightCenter() [2]float64 {
 	weightCenter := task.coords(0)
 	for i := 1; i < task.countTown; i++ {
 		weightCenter = computeWeightCenter(weightCenter, task.coords(i))
 	}
 	return weightCenter
-}
-
-func computeAllEuclideanDistance(townsCoord [][2]float64) [][]float64 {
-	countTowns := len(townsCoord)
-
-	// allocation
-	betweenTownsLength := make([][]float64, countTowns)
-	for i := 0; i < countTowns; i++ {
-		betweenTownsLength[i] = make([]float64, countTowns)
-	}
-
-	// initialization
-	for i := 0; i < countTowns-1; i++ {
-		for j := i + 1; j < countTowns; j++ {
-			betweenTownsLength[i][j] = computeEuclideanDistance(townsCoord[i], townsCoord[j])
-			// Euclidean distance is symmetric, so ...
-			betweenTownsLength[j][i] = betweenTownsLength[i][j]
-		}
-	}
-
-	return betweenTownsLength
 }
 
 func (task *travelingSalesmanTask) Compute(reductoAlgoName string, alpha int, betta int) (solution *travelingSalesmanSolution) {
@@ -327,7 +306,7 @@ func criterion(clusterOrder []int, betweenClustersLength [][]float64) float64 {
 func (task *travelingSalesmanSubTask) computeExternalTask(subTasks []*travelingSalesmanSubTask) []*travelingSalesmanSubTask {
 	weightCenters := make([][2]float64, len(subTasks))
 	for i, task := range subTasks {
-		weightCenters[i] = computeClusterWeightCenter(task)
+		weightCenters[i] = task.computeClusterWeightCenter()
 	}
 
 	betweenClustersLength := computeAllEuclideanDistance(weightCenters)
