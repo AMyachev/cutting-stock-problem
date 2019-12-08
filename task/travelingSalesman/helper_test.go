@@ -23,3 +23,13 @@ func TestComputeEuclideanDistance(t *testing.T) {
 		t.Error(formatErrorReport("computeEuclideanDistance", distance, expectedDistance))
 	}
 }
+
+func TestComputeWeightCenter(t *testing.T) {
+	firstPoint := [2]float64{1.0, 1.0}
+	secondPoint := [2]float64{2.0, 2.0}
+
+	expectedWeightCenter := [2]float64{1.5, 1.5}
+	if weightCenter := computeWeightCenter(firstPoint, secondPoint); weightCenter != expectedWeightCenter {
+		t.Error(formatErrorReport("computeWeightCenter", weightCenter, expectedWeightCenter))
+	}
+}

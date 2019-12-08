@@ -8,3 +8,7 @@ func computeEuclideanDistance(firstPoint [2]float64, secondPoint [2]float64) flo
 	ySqr := math.Pow(firstPoint[1]-secondPoint[1], 2)
 	return math.Sqrt(xSqr + ySqr)
 }
+
+func computeWeightCenter(firstPoint [2]float64, secondPoint [2]float64) [2]float64 {
+	return [2]float64{(firstPoint[0] + secondPoint[0]) / 2, (firstPoint[1] + secondPoint[1]) / 2}
+}

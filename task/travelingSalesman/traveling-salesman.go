@@ -81,10 +81,6 @@ func MakeTravelingSalesmanTask(taskFile string) *travelingSalesmanTask {
 	}
 }
 
-func computeWeightCenter(firstPoint [2]float64, secondPoint [2]float64) [2]float64 {
-	return [2]float64{math.Abs(firstPoint[0]-secondPoint[0]) / 2, math.Abs(firstPoint[1]-secondPoint[1]) / 2}
-}
-
 func computeClusterWeightCenter(task *travelingSalesmanSubTask) [2]float64 {
 	weightCenter := task.coords(0)
 	for i := 1; i < task.countTown; i++ {
