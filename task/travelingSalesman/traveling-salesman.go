@@ -148,7 +148,7 @@ func (task *travelingSalesmanSubTask) coords(town int) [2]float64 {
 func (task *travelingSalesmanSubTask) computeClusterWeightCenter() [2]float64 {
 	weightCenter := task.coords(0)
 	for i := 1; i < task.countTown; i++ {
-		weightCenter = computeWeightCenter(weightCenter, task.coords(i))
+		weightCenter = computeWeightCenter(weightCenter, i, task.coords(i))
 	}
 	return weightCenter
 }

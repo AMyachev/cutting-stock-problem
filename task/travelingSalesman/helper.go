@@ -13,8 +13,15 @@ func computeEuclideanDistance(firstPoint [2]float64, secondPoint [2]float64) flo
 	return math.Sqrt(xSqr + ySqr)
 }
 
-func computeWeightCenter(firstPoint [2]float64, secondPoint [2]float64) [2]float64 {
-	return [2]float64{(firstPoint[0] + secondPoint[0]) / 2, (firstPoint[1] + secondPoint[1]) / 2}
+func computeWeightCenter(firstPoint [2]float64, firstPointCountObjects int, secondPoint [2]float64) [2]float64 {
+	// compute displacement vector
+	xDisp := secondPoint[0] - firstPoint[0]
+	yDisp := secondPoint[1] - firstPoint[1]
+
+	// the more massive the point, the less it will shift relative to the second point
+
+	return [2]float64{firstPoint[0] + xDisp/float64(firstPointCountObjects+1.),
+		firstPoint[1] + yDisp/float64(firstPointCountObjects+1)}
 }
 
 func computeAllEuclideanDistance(clusterPoints [][2]float64) [][]float64 {

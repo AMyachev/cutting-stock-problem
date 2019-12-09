@@ -115,9 +115,11 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 				clusterCenterIdx = i
 			}
 		}
-		townsIdx[clusterCenterIdx] = append(townsIdx[clusterCenterIdx], townIdx)
+
 		// update weight of cluster center
-		clustersCenterWeight[clusterCenterIdx] = computeWeightCenter(clustersCenterWeight[clusterCenterIdx], task.coords(townIdx))
+		clustersCenterWeight[clusterCenterIdx] = computeWeightCenter(clustersCenterWeight[clusterCenterIdx], len(townsIdx[clusterCenterIdx]), task.coords(townIdx))
+
+		townsIdx[clusterCenterIdx] = append(townsIdx[clusterCenterIdx], townIdx)
 	}
 
 	// conversion of the city index to its number

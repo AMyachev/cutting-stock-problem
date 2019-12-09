@@ -66,7 +66,7 @@ func TestComputeWeightCenter(t *testing.T) {
 	secondPoint := [2]float64{2.0, 2.0}
 
 	expectedWeightCenter := [2]float64{1.5, 1.5}
-	if weightCenter := computeWeightCenter(firstPoint, secondPoint); weightCenter != expectedWeightCenter {
+	if weightCenter := computeWeightCenter(firstPoint, 1, secondPoint); weightCenter != expectedWeightCenter {
 		t.Error(formatErrorReport("computeWeightCenter", weightCenter, expectedWeightCenter))
 	}
 }
