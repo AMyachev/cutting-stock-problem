@@ -21,6 +21,7 @@ func init() {
 	computeTSPCmd.Flags().IntVar(&alpha, "count-cluster", 10, "count clusters per step")
 	computeTSPCmd.Flags().IntVar(&betta, "depth", 3, "count os using reduction")
 	computeTSPCmd.Flags().StringVar(&travelingSalesmanProblemFile, "task-file", "", "path to file with traveling salesman problem")
+	computeTSPCmd.Flags().StringVar(&reducto, "reduction", "standard", "reduction algorithm {standard, modificated}")
 	computeTSPCmd.Flags().BoolVar(&getOptimDeviation, "deviation", true, "compute deviation relative to optimum value")
 }
 
@@ -30,6 +31,8 @@ var getOptimDeviation bool
 
 var alpha int
 var betta int
+
+var reducto string
 
 var computeTSPCmd = &cobra.Command{
 	Use:   "computeTSP",
@@ -69,7 +72,7 @@ var computeTSPCmd = &cobra.Command{
 
 func ComputeTSProblem(taskFile string, getDeviation bool) float64 {
 	task := travelingSalesman.MakeTravelingSalesmanTask(taskFile)
-	solution := task.Compute("standard", "standard", alpha, betta)
+	solution := task.Compute(reducto, "standard", alpha, betta)
 
 	_, taskFileName := filepath.Split(taskFile)
 	taskFileName = strings.TrimSuffix(taskFileName, ".txt")

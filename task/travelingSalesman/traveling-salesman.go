@@ -107,6 +107,8 @@ func (task *travelingSalesmanTask) Compute(reductoAlgoName, greedyAlgoName strin
 	switch reductoAlgoName {
 	case "standard":
 		reductoAlgo = standardReducto
+	case "modificated":
+		reductoAlgo = modifReducto
 	default:
 		panic("not implemeted")
 	}

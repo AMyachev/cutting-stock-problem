@@ -2,6 +2,7 @@ package travelingSalesman
 
 import (
 	"math"
+	"sort"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -130,6 +131,49 @@ func standardReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSale
 			towns[j] = task.towns[townsIdx[i][j]]
 		}
 		result[i] = MakeTravelingSalesmanSubTask(towns, task.townsCoord, task.betweenTownsLength)
+	}
+
+	return result
+}
+
+func modifReducto(task *travelingSalesmanSubTask, alpha int) []*travelingSalesmanSubTask {
+	subTasks := standardReducto(task, alpha)
+
+	sort.Slice(subTasks, func(i, j int) bool { return subTasks[i].countTown < subTasks[j].countTown })
+
+	subTasksWeightCenters := make([][2]float64, len(subTasks))
+	for i := 0; i < len(subTasks); i++ {
+		subTasksWeightCenters[i] = subTasks[i].computeClusterWeightCenter()
+	}
+
+	// filter
+	remove := make([]bool, len(subTasks))
+
+	for i := 0; i < len(subTasks)-1; i++ {
+		if subTasks[i].countTown <= alphaMax {
+			// found nearest cluster
+			minLenght := math.Inf(1)
+			nearestCluster := 0
+			for j := i + 1; j < len(subTasks); j++ {
+				if length := computeEuclideanDistance(subTasksWeightCenters[i], subTasksWeightCenters[j]); length < minLenght {
+					minLenght = length
+					nearestCluster = j
+				}
+			}
+
+			subTasks[nearestCluster].towns = append(subTasks[nearestCluster].towns, subTasks[i].towns...)
+			subTasks[nearestCluster].countTown += len(subTasks[i].towns)
+			// modificate weight center
+			subTasksWeightCenters[nearestCluster] = subTasks[nearestCluster].computeClusterWeightCenter()
+			remove[i] = true
+		}
+	}
+
+	result := []*travelingSalesmanSubTask{}
+	for i := 0; i < len(subTasks); i++ {
+		if !remove[i] {
+			result = append(result, subTasks[i])
+		}
 	}
 
 	return result
