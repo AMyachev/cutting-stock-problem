@@ -9,6 +9,8 @@ import (
 
 const MaxInt = int(^uint(0) >> 1)
 
+var countVertex int = 0
+
 type resourceAllocationTask struct {
 	// N
 	countSuppliers int
@@ -136,6 +138,7 @@ func MakeResourceAllocationTaskFromFile(taskFile string) *resourceAllocationTask
 }
 
 type Vertex struct {
+	id           int
 	istock       bool
 	stock        bool
 	nextBranches []*Branch
@@ -147,8 +150,9 @@ type Vertex struct {
 func (vert *Vertex) Mark(flow int) {
 	if flow == MaxInt {
 		vert.flowFromPreviousVertex = flow - 1
+	} else {
+		vert.flowFromPreviousVertex = flow
 	}
-	vert.flowFromPreviousVertex = flow
 }
 
 func (vert *Vertex) Unmark() {
@@ -164,13 +168,16 @@ func (vert *Vertex) IsStock() bool {
 }
 
 func MakeVertex(istock bool, stock bool, nextBranches []*Branch, prevBranches []*Branch) *Vertex {
-	return &Vertex{
+	vertex := &Vertex{
+		id:                     countVertex,
 		istock:                 istock,
 		stock:                  stock,
 		nextBranches:           nextBranches,
 		prevBranches:           prevBranches,
 		flowFromPreviousVertex: MaxInt,
 	}
+	countVertex++
+	return vertex
 }
 
 type Branch struct {
@@ -282,6 +289,12 @@ func findPossibleTransactions(currentVertex *Vertex) []*Branch {
 			possibleTransitions = append(possibleTransitions, nextBranch)
 		}
 	}
+
+	// optimization
+	if len(possibleTransitions) != 0 {
+		return possibleTransitions
+	}
+
 	for _, prevBranch := range currentVertex.prevBranches {
 		if prevBranch.reverseBandwidth != 0 && !prevBranch.source.IsMarked() {
 			possibleTransitions = append(possibleTransitions, prevBranch)
