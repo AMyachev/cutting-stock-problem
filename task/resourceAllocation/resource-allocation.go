@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const MaxInt = int(^uint(0) >> 1)
+
 type resourceAllocationTask struct {
 	// N
 	countSuppliers int
@@ -131,4 +133,117 @@ func MakeResourceAllocationTaskFromFile(taskFile string) *resourceAllocationTask
 		setsSuppliersForCastomers:        setsSuppliersForCastomers,
 	}
 
+}
+
+type Vertex struct {
+	istock       bool
+	stock        bool
+	nextBranches []*Branch
+	prevBranches []*Branch
+}
+
+func MakeVertex(istock bool, stock bool, nextBranches []*Branch, prevBranches []*Branch) *Vertex {
+	return &Vertex{
+		istock:       istock,
+		stock:        stock,
+		nextBranches: nextBranches,
+		prevBranches: prevBranches,
+	}
+}
+
+type Branch struct {
+	source      *Vertex
+	destination *Vertex
+
+	directBandwidth  int
+	reverseBandwidth int
+}
+
+func MakeBranch(source *Vertex, destination *Vertex, directBandwidth int) *Branch {
+	return &Branch{
+		source:           source,
+		destination:      destination,
+		directBandwidth:  directBandwidth,
+		reverseBandwidth: 0,
+	}
+}
+
+type Graph struct {
+	vertexes [][]*Vertex
+}
+
+func connectVertexes(first *Vertex, second *Vertex, directBandwidth int) {
+	// setup branch and it's vertexes
+	branch := MakeBranch(first, second, directBandwidth)
+	first.nextBranches = append(first.nextBranches, branch)
+	second.prevBranches = append(second.prevBranches, branch)
+}
+
+func MakeGraphFromTask(task *resourceAllocationTask) *Graph {
+	// istock level
+	istock := MakeVertex(true, false, []*Branch{}, []*Branch{})
+
+	// second level
+	volumeGoodsFromSuppliersVertexes := make([]*Vertex, task.countSuppliers)
+
+	// third level
+	volumeGoodsFromSuppliersOnTactVertexes := make([]*Vertex, task.countSuppliers*task.countTacts)
+
+	for i := 0; i < task.countSuppliers; i++ {
+		vertex := MakeVertex(false, false, []*Branch{}, []*Branch{})
+		connectVertexes(istock, vertex, task.volumeGoodsFromSuppliers[i])
+		volumeGoodsFromSuppliersVertexes[i] = vertex
+
+		for j := 0; j < task.countTacts; j++ {
+			vertex := MakeVertex(false, false, []*Branch{}, []*Branch{})
+			connectVertexes(volumeGoodsFromSuppliersVertexes[i], vertex, task.volumeGoodsFromSuppliersOnTact[i][j])
+			volumeGoodsFromSuppliersOnTactVertexes[i*task.countSuppliers+j] = vertex
+		}
+	}
+
+	// stock level
+	stock := MakeVertex(false, true, []*Branch{}, []*Branch{})
+
+	// fourth level
+	volumeUsedGoodsByCastomersOnTactVertexes := make([]*Vertex, task.countCastomers*task.countTacts)
+
+	for i := 0; i < task.countCastomers; i++ {
+		for j := 0; j < task.countTacts; j++ {
+			vertex := MakeVertex(false, false, []*Branch{}, []*Branch{})
+			connectVertexes(vertex, stock, task.volumeUsedGoodsByCastomersOnTact[i][j])
+
+			for _, supplier := range task.setsSuppliersForCastomers[i] {
+				// customers are numbered from 1 in input data
+				thirdLevelVertex := volumeGoodsFromSuppliersOnTactVertexes[(supplier-1)*task.countTacts+j]
+				// this maybe special branch without bandwidth limitation (using MaxInt for now)
+				connectVertexes(thirdLevelVertex, vertex, MaxInt)
+			}
+
+			volumeUsedGoodsByCastomersOnTactVertexes[i*task.countCastomers+j] = vertex
+		}
+	}
+
+	// connect third level with fourth level
+
+	return &Graph{
+		vertexes: [][]*Vertex{
+			[]*Vertex{istock},
+			volumeGoodsFromSuppliersVertexes,
+			volumeGoodsFromSuppliersOnTactVertexes,
+			volumeUsedGoodsByCastomersOnTactVertexes,
+			[]*Vertex{stock},
+		},
+	}
+}
+
+func (task *resourceAllocationTask) Compute() int {
+	graph := MakeGraphFromTask(task)
+	// modificate graph
+	maxFlow := fordFulkerson(graph)
+	return maxFlow
+}
+
+func fordFulkerson(graph *Graph) int {
+	panic("not implemented")
+	return 0
 }
