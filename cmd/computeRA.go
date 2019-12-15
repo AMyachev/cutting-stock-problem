@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -51,10 +50,7 @@ var computeRACmd = &cobra.Command{
 
 func ComputeRAProblem(taskFile string) int {
 	task := resourceAllocation.MakeResourceAllocationTaskFromFile(taskFile)
-	solution := task.Compute()
-
-	_, taskFileName := filepath.Split(taskFile)
-	taskFileName = strings.TrimSuffix(taskFileName, ".txt")
+	solution := task.Compute("warehouse")
 
 	fmt.Println("flow: ", solution)
 

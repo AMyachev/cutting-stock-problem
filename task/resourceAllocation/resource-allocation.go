@@ -262,8 +262,6 @@ func MakeGraphFromTask(task *resourceAllocationTask) *Graph {
 		}
 	}
 
-	// connect third level with fourth level
-
 	return &Graph{
 		vertexes: [][]*Vertex{
 			[]*Vertex{istock},
@@ -275,8 +273,20 @@ func MakeGraphFromTask(task *resourceAllocationTask) *Graph {
 	}
 }
 
-func (task *resourceAllocationTask) Compute() int {
+func (task *resourceAllocationTask) Compute(modification string) int {
 	graph := MakeGraphFromTask(task)
+
+	switch modification {
+	case "warehouse":
+		for i := 0; i < task.countCastomers; i++ {
+			for j := 0; j < task.countTacts-1; j++ {
+				first := graph.vertexes[3][i*task.countTacts+j]
+				second := graph.vertexes[3][i*task.countTacts+j+1]
+				connectVertexes(first, second, MaxInt)
+			}
+		}
+	}
+
 	// modificate graph
 	maxFlow := fordFulkerson(graph)
 	return maxFlow
