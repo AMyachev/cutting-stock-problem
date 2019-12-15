@@ -145,6 +145,9 @@ type Vertex struct {
 }
 
 func (vert *Vertex) Mark(flow int) {
+	if flow == MaxInt {
+		vert.flowFromPreviousVertex = flow - 1
+	}
 	vert.flowFromPreviousVertex = flow
 }
 
@@ -226,7 +229,7 @@ func MakeGraphFromTask(task *resourceAllocationTask) *Graph {
 		for j := 0; j < task.countTacts; j++ {
 			vertex := MakeVertex(false, false, []*Branch{}, []*Branch{})
 			connectVertexes(volumeGoodsFromSuppliersVertexes[i], vertex, task.volumeGoodsFromSuppliersOnTact[i][j])
-			volumeGoodsFromSuppliersOnTactVertexes[i*task.countSuppliers+j] = vertex
+			volumeGoodsFromSuppliersOnTactVertexes[i*task.countTacts+j] = vertex
 		}
 	}
 
@@ -248,7 +251,7 @@ func MakeGraphFromTask(task *resourceAllocationTask) *Graph {
 				connectVertexes(thirdLevelVertex, vertex, MaxInt)
 			}
 
-			volumeUsedGoodsByCastomersOnTactVertexes[i*task.countCastomers+j] = vertex
+			volumeUsedGoodsByCastomersOnTactVertexes[i*task.countTacts+j] = vertex
 		}
 	}
 
@@ -280,7 +283,7 @@ func findPossibleTransactions(currentVertex *Vertex) []*Branch {
 		}
 	}
 	for _, prevBranch := range currentVertex.prevBranches {
-		if prevBranch.reverseBandwidth != 0 && !prevBranch.destination.IsMarked() {
+		if prevBranch.reverseBandwidth != 0 && !prevBranch.source.IsMarked() {
 			possibleTransitions = append(possibleTransitions, prevBranch)
 		}
 	}
