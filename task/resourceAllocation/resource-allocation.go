@@ -310,23 +310,28 @@ func (graph *Graph) restore() {
 	}
 }
 
-func (graph *Graph) setWareHouseVolume(task *resourceAllocationTask, warehouseVolume int) {
-	for i := 0; i < task.countCastomers; i++ {
-		for j := 0; j < task.countTacts-1; j++ {
-			vertexWithWarehouseBranch := graph.vertexes[3][i*task.countTacts+j]
-			// restore vertex
-			vertexWithWarehouseBranch.flowFromPreviousVertex = MaxInt
-			// restore branch
-			nextBranches := vertexWithWarehouseBranch.nextBranches
-			warehouseBranch := nextBranches[len(nextBranches)-1]
-			warehouseBranch.directBandwidth = warehouseVolume
-		}
+func (graph *Graph) setWareHouseVolumeForCastomer(task *resourceAllocationTask, warehouseVolume int, castomerID int) {
+	for j := 0; j < task.countTacts-1; j++ {
+		vertexWithWarehouseBranch := graph.vertexes[3][castomerID*task.countTacts+j]
+		// restore vertex
+		vertexWithWarehouseBranch.flowFromPreviousVertex = MaxInt
+		// restore branch
+		nextBranches := vertexWithWarehouseBranch.nextBranches
+		warehouseBranch := nextBranches[len(nextBranches)-1]
+		warehouseBranch.directBandwidth = warehouseVolume
+		warehouseBranch.reverseBandwidth = 0
 	}
 }
 
-func (graph *Graph) binarySearchWarehouseVolume(task *resourceAllocationTask, maxFlow int, warehouseVolume int) int {
+func (graph *Graph) setWareHouseVolume(task *resourceAllocationTask, warehouseVolume int) {
+	for i := 0; i < task.countCastomers; i++ {
+		graph.setWareHouseVolumeForCastomer(task, warehouseVolume, i)
+	}
+}
+
+func (graph *Graph) binarySearchWarehouseVolume(task *resourceAllocationTask, maxFlow int, maxWarehouseVolume int) int {
 	lowerVolume := 0
-	upperVolume := warehouseVolume
+	upperVolume := maxWarehouseVolume
 	for lowerVolume < upperVolume {
 		centerVolume := (lowerVolume + upperVolume) / 2
 		graph.setWareHouseVolume(task, centerVolume)
@@ -339,6 +344,24 @@ func (graph *Graph) binarySearchWarehouseVolume(task *resourceAllocationTask, ma
 	}
 
 	return lowerVolume
+}
+
+func (graph *Graph) findMinCountWarehouse(task *resourceAllocationTask, maxFlow int) int {
+	countWarehouse := task.countCastomers
+
+	for i := 0; i < task.countCastomers; i++ {
+		// disable warehouse branch
+		graph.setWareHouseVolumeForCastomer(task, 0, i)
+		if flow := fordFulkerson(graph); flow == maxFlow {
+			countWarehouse--
+		} else {
+			// enable warehouse branch
+			graph.setWareHouseVolumeForCastomer(task, MaxInt, i)
+		}
+		graph.restore()
+	}
+
+	return countWarehouse
 }
 
 func (task *resourceAllocationTask) Compute(modification string) (maxFlow int) {
@@ -358,6 +381,14 @@ func (task *resourceAllocationTask) Compute(modification string) (maxFlow int) {
 		graph.restore()
 		minVolume := graph.binarySearchWarehouseVolume(task, maxFlow, startVolume)
 		fmt.Println("minVolumeWarehouse: ", minVolume)
+	case "minCountWareHouse":
+		graph.addWarehouse(task)
+		// modificate graph
+		maxFlow = fordFulkerson(graph)
+		graph.restore()
+		minCountWarehouse := graph.findMinCountWarehouse(task, maxFlow)
+		fmt.Println("minCountWarehouse: ", minCountWarehouse)
+
 	case "default":
 		// modificate graph
 		maxFlow = fordFulkerson(graph)
