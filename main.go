@@ -17,6 +17,6 @@ func init() {
 func main() {
 	//cmd.Execute()
 	task := resourceAllocation.MakeResourceAllocationTaskFromFile("example-tasks/resourceAllocation/task_4_01_n2_m2_T2.txt")
-	task.Compute()
-	fmt.Println(task)
+	maxFlow := task.Compute()
+	fmt.Println(maxFlow)
 }

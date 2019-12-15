@@ -338,6 +338,7 @@ func fordFulkerson(graph *Graph) int {
 				vertexesForUnmark = append(vertexesForUnmark, currentVertex)
 				wayVertexes = wayVertexes[:len(wayVertexes)-1]
 				wayBranches = wayBranches[:len(wayBranches)-1]
+				currentVertex = wayVertexes[len(wayVertexes)-1]
 				continue
 			}
 
