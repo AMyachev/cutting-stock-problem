@@ -1,6 +1,7 @@
 package resourceAllocation
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"strconv"
@@ -313,6 +314,9 @@ func (graph *Graph) setWareHouseVolume(task *resourceAllocationTask, warehouseVo
 	for i := 0; i < task.countCastomers; i++ {
 		for j := 0; j < task.countTacts-1; j++ {
 			vertexWithWarehouseBranch := graph.vertexes[3][i*task.countTacts+j]
+			// restore vertex
+			vertexWithWarehouseBranch.flowFromPreviousVertex = MaxInt
+			// restore branch
 			nextBranches := vertexWithWarehouseBranch.nextBranches
 			warehouseBranch := nextBranches[len(nextBranches)-1]
 			warehouseBranch.directBandwidth = warehouseVolume
@@ -352,7 +356,8 @@ func (task *resourceAllocationTask) Compute(modification string) (maxFlow int) {
 
 		startVolume := graph.chooseMaxVolumeWarehouse(task)
 		graph.restore()
-		graph.binarySearchWarehouseVolume(task, maxFlow, startVolume)
+		minVolume := graph.binarySearchWarehouseVolume(task, maxFlow, startVolume)
+		fmt.Println("minVolumeWarehouse: ", minVolume)
 	case "default":
 		// modificate graph
 		maxFlow = fordFulkerson(graph)
@@ -428,6 +433,9 @@ func fordFulkerson(graph *Graph) int {
 			possibleTransitions := findPossibleTransactions(currentVertex)
 			if len(possibleTransitions) == 0 {
 				if len(wayVertexes) == 1 {
+					for _, vertex := range vertexesForUnmark {
+						vertex.Unmark()
+					}
 					goto maxFlowFound
 				}
 				vertexesForUnmark = append(vertexesForUnmark, currentVertex)
