@@ -140,14 +140,33 @@ type Vertex struct {
 	stock        bool
 	nextBranches []*Branch
 	prevBranches []*Branch
+
+	flowFromPreviousVertex int
+}
+
+func (vert *Vertex) Mark(flow int) {
+	vert.flowFromPreviousVertex = flow
+}
+
+func (vert *Vertex) Unmark() {
+	vert.flowFromPreviousVertex = MaxInt
+}
+
+func (vert *Vertex) IsMarked() bool {
+	return vert.flowFromPreviousVertex != MaxInt
+}
+
+func (vert *Vertex) IsStock() bool {
+	return vert.stock
 }
 
 func MakeVertex(istock bool, stock bool, nextBranches []*Branch, prevBranches []*Branch) *Vertex {
 	return &Vertex{
-		istock:       istock,
-		stock:        stock,
-		nextBranches: nextBranches,
-		prevBranches: prevBranches,
+		istock:                 istock,
+		stock:                  stock,
+		nextBranches:           nextBranches,
+		prevBranches:           prevBranches,
+		flowFromPreviousVertex: MaxInt,
 	}
 }
 
@@ -157,6 +176,16 @@ type Branch struct {
 
 	directBandwidth  int
 	reverseBandwidth int
+}
+
+func (branch *Branch) Modificate(flow int, direct bool) {
+	if direct {
+		branch.directBandwidth -= flow
+		branch.reverseBandwidth += flow
+	} else {
+		branch.directBandwidth += flow
+		branch.reverseBandwidth -= flow
+	}
 }
 
 func MakeBranch(source *Vertex, destination *Vertex, directBandwidth int) *Branch {
@@ -243,7 +272,113 @@ func (task *resourceAllocationTask) Compute() int {
 	return maxFlow
 }
 
+func findPossibleTransactions(currentVertex *Vertex) []*Branch {
+	possibleTransitions := []*Branch{}
+	for _, nextBranch := range currentVertex.nextBranches {
+		if nextBranch.directBandwidth != 0 && !nextBranch.destination.IsMarked() {
+			possibleTransitions = append(possibleTransitions, nextBranch)
+		}
+	}
+	for _, prevBranch := range currentVertex.prevBranches {
+		if prevBranch.reverseBandwidth != 0 && !prevBranch.destination.IsMarked() {
+			possibleTransitions = append(possibleTransitions, prevBranch)
+		}
+	}
+	return possibleTransitions
+}
+
+func computeFlow(wayVertexes []*Vertex, wayBranches []*Branch) int {
+	minFlow := MaxInt
+
+	// find min flow (exclude istock vertex) and unmark
+	for _, vertex := range wayVertexes[1:] {
+		if flow := vertex.flowFromPreviousVertex; flow < minFlow {
+			minFlow = flow
+		}
+		vertex.Unmark()
+	}
+
+	for i, branch := range wayBranches {
+		switch branch.source {
+		case wayVertexes[i]:
+			// direct branch
+			branch.Modificate(minFlow, true)
+		default:
+			// reverse branch
+			branch.Modificate(minFlow, false)
+		}
+
+	}
+
+	return minFlow
+}
+
 func fordFulkerson(graph *Graph) int {
-	panic("not implemented")
-	return 0
+	maxFlow := 0
+
+	// start from istock
+	istockVertex := graph.vertexes[0][0]
+	// MaxInt is used as a flag for check mark, so MaxInt - 1 (this is an unreachable value)
+	istockVertex.Mark(MaxInt - 1)
+
+	for {
+		vertexesForUnmark := []*Vertex{}
+		// initialize with istock vertex
+		wayVertexes := []*Vertex{istockVertex}
+		wayBranches := []*Branch{}
+
+		currentVertex := istockVertex
+
+		for !currentVertex.IsStock() {
+			possibleTransitions := findPossibleTransactions(currentVertex)
+			if len(possibleTransitions) == 0 {
+				if len(wayVertexes) == 1 {
+					goto maxFlowFound
+				}
+				vertexesForUnmark = append(vertexesForUnmark, currentVertex)
+				wayVertexes = wayVertexes[:len(wayVertexes)-1]
+				wayBranches = wayBranches[:len(wayBranches)-1]
+				continue
+			}
+
+			maxBandwidth := 0
+			chosenBranch := possibleTransitions[0]
+			chosenVertex := chosenBranch.destination
+			for _, possibleTransition := range possibleTransitions {
+				switch possibleTransition.source {
+				case currentVertex:
+					// direct branch
+					if possibleTransition.directBandwidth > maxBandwidth {
+						maxBandwidth = possibleTransition.directBandwidth
+						chosenBranch = possibleTransition
+						chosenVertex = chosenBranch.destination
+					}
+				default:
+					// reversed branch
+					if possibleTransition.reverseBandwidth > maxBandwidth {
+						maxBandwidth = possibleTransition.reverseBandwidth
+						chosenBranch = possibleTransition
+						chosenVertex = chosenBranch.source
+					}
+				}
+			}
+			wayBranches = append(wayBranches, chosenBranch)
+			wayVertexes = append(wayVertexes, chosenVertex)
+
+			currentVertex = chosenVertex
+			currentVertex.Mark(maxBandwidth)
+		}
+
+		// also do unmark vertexes and modificate bandwidth branches
+		maxFlow += computeFlow(wayVertexes, wayBranches)
+
+		for _, vertex := range vertexesForUnmark {
+			vertex.Unmark()
+		}
+
+	}
+
+maxFlowFound:
+
+	return maxFlow
 }
