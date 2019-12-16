@@ -18,7 +18,7 @@ func init() {
 	rootCmd.AddCommand(computeRACmd)
 
 	computeRACmd.Flags().StringVar(&resourceAllocationProblemFile, "task-file", "", "path to file with traveling salesman problem")
-	computeRACmd.Flags().StringVar(&modification, "mod", "default", "task that will be computed {default, warehouse, minVolumeWarehouse}")
+	computeRACmd.Flags().StringVar(&modification, "mod", "default", "task that will be computed {default, warehouse, minVolumeWarehouse, minCountWareHouseDefault, minCountWareHouseImprov}")
 }
 
 var resourceAllocationProblemsDir string
@@ -43,7 +43,9 @@ var computeRACmd = &cobra.Command{
 
 			start := time.Now()
 			for _, file := range files {
+				fmt.Println(file.Name() + ":")
 				ComputeRAProblem(filepath.Join(resourceAllocationProblemsDir, file.Name()), modification)
+				fmt.Println("")
 			}
 			end := time.Now()
 			fmt.Println("alltime: ", end.Sub(start))

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -346,22 +347,71 @@ func (graph *Graph) binarySearchWarehouseVolume(task *resourceAllocationTask, ma
 	return lowerVolume
 }
 
-func (graph *Graph) findMinCountWarehouse(task *resourceAllocationTask, maxFlow int) int {
+func (graph *Graph) findMinCountWarehouse(task *resourceAllocationTask, castomersOrder []int, maxFlow int) int {
 	countWarehouse := task.countCastomers
 
-	for i := 0; i < task.countCastomers; i++ {
+	for _, castomer := range castomersOrder {
 		// disable warehouse branch
-		graph.setWareHouseVolumeForCastomer(task, 0, i)
+		graph.setWareHouseVolumeForCastomer(task, 0, castomer)
 		if flow := fordFulkerson(graph); flow == maxFlow {
 			countWarehouse--
 		} else {
 			// enable warehouse branch
-			graph.setWareHouseVolumeForCastomer(task, MaxInt, i)
+			graph.setWareHouseVolumeForCastomer(task, MaxInt, castomer)
 		}
 		graph.restore()
 	}
 
 	return countWarehouse
+}
+
+func (graph *Graph) findMinCountWarehouseDefault(task *resourceAllocationTask, maxFlow int) int {
+	permutation := make([]int, task.countCastomers)
+	for i := 0; i < len(permutation); i++ {
+		permutation[i] = i
+	}
+
+	return graph.findMinCountWarehouse(task, permutation, maxFlow)
+}
+
+func sum(task *resourceAllocationTask, castomer int) int {
+	sum := 0
+	for _, supplier := range task.setsSuppliersForCastomers[castomer] {
+		sum += task.volumeGoodsFromSuppliers[supplier-1]
+	}
+	return sum
+}
+
+func (graph *Graph) findMinCountWarehouseImprove(task *resourceAllocationTask, maxFlow int) int {
+	permutation := make([]int, task.countCastomers)
+	for i := 0; i < len(permutation); i++ {
+		permutation[i] = i
+	}
+
+	minCountWarehouse := MaxInt
+
+	var strategies = []func(int, int) bool{
+		func(i, j int) bool {
+			return sum(task, i) >= sum(task, j)
+		},
+		func(i, j int) bool {
+			return len(task.setsSuppliersForCastomers[permutation[i]]) >= len(task.setsSuppliersForCastomers[permutation[j]])
+		},
+		func(i, j int) bool {
+			return len(task.setsSuppliersForCastomers[permutation[i]]) <= len(task.setsSuppliersForCastomers[permutation[j]])
+		},
+	}
+
+	for _, strategy := range strategies {
+		sort.Slice(permutation, strategy)
+		if countWarehouse := graph.findMinCountWarehouse(task, permutation, maxFlow); countWarehouse < minCountWarehouse {
+			minCountWarehouse = countWarehouse
+		}
+		// enable all warehouse branch
+		graph.setWareHouseVolume(task, MaxInt)
+	}
+
+	return minCountWarehouse
 }
 
 func (task *resourceAllocationTask) Compute(modification string) (maxFlow int) {
@@ -381,14 +431,20 @@ func (task *resourceAllocationTask) Compute(modification string) (maxFlow int) {
 		graph.restore()
 		minVolume := graph.binarySearchWarehouseVolume(task, maxFlow, startVolume)
 		fmt.Println("minVolumeWarehouse: ", minVolume)
-	case "minCountWareHouse":
+	case "minCountWareHouseDefault":
 		graph.addWarehouse(task)
 		// modificate graph
 		maxFlow = fordFulkerson(graph)
 		graph.restore()
-		minCountWarehouse := graph.findMinCountWarehouse(task, maxFlow)
+		minCountWarehouse := graph.findMinCountWarehouseDefault(task, maxFlow)
 		fmt.Println("minCountWarehouse: ", minCountWarehouse)
-
+	case "minCountWareHouseImprov":
+		graph.addWarehouse(task)
+		// modificate graph
+		maxFlow = fordFulkerson(graph)
+		graph.restore()
+		minCountWarehouse := graph.findMinCountWarehouseImprove(task, maxFlow)
+		fmt.Println("minCountWarehouse: ", minCountWarehouse)
 	case "default":
 		// modificate graph
 		maxFlow = fordFulkerson(graph)
