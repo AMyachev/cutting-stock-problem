@@ -1,9 +1,8 @@
 package main
 
 import (
-	"os"
-
 	"csp/cmd"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 )
