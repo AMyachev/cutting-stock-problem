@@ -397,9 +397,6 @@ func (graph *Graph) findMinCountWarehouseImprove(task *resourceAllocationTask, m
 		func(i, j int) bool {
 			return len(task.setsSuppliersForCastomers[permutation[i]]) >= len(task.setsSuppliersForCastomers[permutation[j]])
 		},
-		func(i, j int) bool {
-			return len(task.setsSuppliersForCastomers[permutation[i]]) <= len(task.setsSuppliersForCastomers[permutation[j]])
-		},
 	}
 
 	for _, strategy := range strategies {
