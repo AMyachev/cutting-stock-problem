@@ -36,7 +36,7 @@ func MakeKnapsackProblemTest() *knapsackProblem {
 	}
 }
 
-func MakeMakeKnapsackProblemFromFile(taskFile string) *knapsackProblem {
+func MakeKnapsackProblemFromFile(taskFile string) *knapsackProblem {
 	content, err := ioutil.ReadFile(taskFile)
 	if err != nil {
 		log.Fatal(err)
@@ -108,7 +108,7 @@ func (problem *knapsackProblem) RecursiveSolution(permutation []int, remainingPe
 	}
 
 	// complexityByDimension ~ a_k+1
-	complexityByDimension := problem.complexityOrders[dimension-1]
+	complexityByDimension := problem.complexityOrders[permutation[dimension-1]]
 
 	// case when the order is not taken
 	solution, criterion = problem.RecursiveSolution(permutation[:dimension-1], remainingPerformance, doCache)
@@ -202,6 +202,10 @@ func (problem *knapsackProblem) TableSolution(permutation []int, remainingPerfor
 			twoColumns[0] = twoColumns[1]
 			twoColumns[1] = tempColumn
 		}
+	}
+
+	if len(permutation) == 1 {
+		return twoColumns[0][remainingPerformance]
 	}
 
 	// upper right corner
